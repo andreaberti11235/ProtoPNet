@@ -130,7 +130,7 @@ def main():
     
     #if prototype_activation_function == 'linear':
     #    ppnet.set_last_layer_incorrect_connection(incorrect_strength=0)
-    ppnet = ppnet.cuda()
+    #ppnet = ppnet.cuda()
     ppnet_multi = torch.nn.DataParallel(ppnet)
     class_specific = True
     

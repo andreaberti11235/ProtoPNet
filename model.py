@@ -30,7 +30,7 @@ base_architecture_to_features = {'resnet18': resnet18_features,
 
 
 #
-dropout_proportion = 0.4
+dropout_proportion = 999 #0.4
 #
 
 
@@ -95,7 +95,7 @@ class PPNet(nn.Module):
                                                 out_channels=current_out_channels,
                                                 kernel_size=1))
                 ## TODO versione nostra con aggiunta dei Dropout
-                add_on_layers.append(nn.Dropout(p=dropout_proportion))
+                #add_on_layers.append(nn.Dropout(p=dropout_proportion))
 
                 add_on_layers.append(nn.ReLU())
                 add_on_layers.append(nn.Conv2d(in_channels=current_out_channels,
@@ -108,7 +108,7 @@ class PPNet(nn.Module):
                     # add_on_layers.append(nn.ReLU()) #original version
                     
                     ## TODO versione nostra con aggiunta dei Dropout
-                    add_on_layers.append(nn.Dropout(p=dropout_proportion))
+                    #add_on_layers.append(nn.Dropout(p=dropout_proportion))
                     add_on_layers.append(nn.ReLU())
                     #
                     
