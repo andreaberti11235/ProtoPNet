@@ -24,6 +24,14 @@ import numpy as np
 import random
 
 torch.cuda.empty_cache()
+
+print(torch.get_num_threads())
+#torch.set_num_threads(4)
+print(torch.get_num_threads())
+print('------------------------------------')
+
+
+
 #%% SEED FIXED TO FOSTER REPRODUCIBILITY
 def set_seed(seed):
     random.seed(seed)
