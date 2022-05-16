@@ -4,6 +4,7 @@ import time
 
 import torch
 import torch.utils.data
+from torch.utils.data import SubsetRandomSampler
 # import torch.utils.data.distributed
 # from torch.nn.parallel import DistributedDataParallel as ddp
 import torchvision.transforms as transforms
@@ -21,9 +22,13 @@ import save
 from log import create_logger
 from preprocess import mean, std, preprocess_input_function
 
+from stratified_group_data_splitting import StratifiedGroupKFold
+
+
 import numpy as np
 import random
 from matplotlib import pyplot as plt
+import pandas as pd
 
 torch.cuda.empty_cache()
 #%% SEED FIXED TO FOSTER REPRODUCIBILITY
@@ -85,12 +90,18 @@ def main():
     
     from model import dropout_proportion #TODO aggiunta noi questa variabile
     
+    path_to_csv = '/media/si-lab/63bc1baf-d08c-4db5-b271-e462f3f4444d/a_e_g/ppnet_cluster/datasets/push_e_valid_MLO/push_e_valid_MLO_bm.csv'
+    path_to_csv_augmented = '/media/si-lab/63bc1baf-d08c-4db5-b271-e462f3f4444d/a_e_g/ppnet_cluster/datasets/push_e_valid_MLO_augmented/push_e_valid_MLO_augmented_bm.csv'
+    df_original = pd.read_csv(path_to_csv, sep=',', index_col='file_name')
+    df_augmented = pd.read_csv(path_to_csv_augmented, sep=',', index_col='file_name')
+
+    
     normalize = transforms.Normalize(mean=mean,
                                      std=std)
     
+    # Here train_dataset becomes the img_original_dataset and push_dataset becomes the img_augmented_dataset
     # all datasets
-    # train set
-    train_dataset = datasets.ImageFolder(
+    img_original_dataset = datasets.ImageFolder(
         train_dir,
         transforms.Compose([
             transforms.Grayscale(num_output_channels=3), #TODO
@@ -98,20 +109,20 @@ def main():
             transforms.ToTensor(),
             normalize,
         ]))
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=train_batch_size, shuffle=True,
-        num_workers=workers, pin_memory=False) #TODO cambiare num_workers=4*num_gpu
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size=train_batch_size, shuffle=True,
+    #     num_workers=workers, pin_memory=False) #TODO cambiare num_workers=4*num_gpu
     # push set
-    train_push_dataset = datasets.ImageFolder(
+    img_augmented_dataset = datasets.ImageFolder(
         train_push_dir,
         transforms.Compose([
             transforms.Grayscale(num_output_channels=3),
             transforms.Resize(size=(img_size, img_size)),
             transforms.ToTensor(),
         ]))
-    train_push_loader = torch.utils.data.DataLoader(
-        train_push_dataset, batch_size=train_push_batch_size, shuffle=False,
-        num_workers=workers, pin_memory=False)
+    # train_push_loader = torch.utils.data.DataLoader(
+    #     train_push_dataset, batch_size=train_push_batch_size, shuffle=False,
+    #     num_workers=workers, pin_memory=False)
     # test set
     test_dataset = datasets.ImageFolder(
         test_dir,
@@ -121,14 +132,49 @@ def main():
             transforms.ToTensor(),
             normalize,
         ]))
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=test_batch_size, shuffle=True, #TODO messo True, era falso
-        num_workers=workers, pin_memory=False)
+    # test_loader = torch.utils.data.DataLoader(
+    #     test_dataset, batch_size=test_batch_size, shuffle=True, #TODO messo True, era falso
+    #     num_workers=workers, pin_memory=False)
+    # train set
+    # train_dataset = datasets.ImageFolder(
+    #     train_dir,
+    #     transforms.Compose([
+    #         transforms.Grayscale(num_output_channels=3), #TODO
+    #         transforms.Resize(size=(img_size, img_size)),
+    #         transforms.ToTensor(),
+    #         normalize,
+    #     ]))
+    # train_loader = torch.utils.data.DataLoader(
+    #     train_dataset, batch_size=train_batch_size, shuffle=True,
+    #     num_workers=workers, pin_memory=False) #TODO cambiare num_workers=4*num_gpu
+    # # push set
+    # train_push_dataset = datasets.ImageFolder(
+    #     train_push_dir,
+    #     transforms.Compose([
+    #         transforms.Grayscale(num_output_channels=3),
+    #         transforms.Resize(size=(img_size, img_size)),
+    #         transforms.ToTensor(),
+    #     ]))
+    # train_push_loader = torch.utils.data.DataLoader(
+    #     train_push_dataset, batch_size=train_push_batch_size, shuffle=False,
+    #     num_workers=workers, pin_memory=False)
+    # # test set
+    # test_dataset = datasets.ImageFolder(
+    #     test_dir,
+    #     transforms.Compose([
+    #         transforms.Grayscale(num_output_channels=3),
+    #         transforms.Resize(size=(img_size, img_size)),
+    #         transforms.ToTensor(),
+    #         normalize,
+    #     ]))
+    # test_loader = torch.utils.data.DataLoader(
+    #     test_dataset, batch_size=test_batch_size, shuffle=True, #TODO messo True, era falso
+    #     num_workers=workers, pin_memory=False)
     
     # we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
-    log('training set size: {0}'.format(len(train_loader.dataset)))
-    log('push set size: {0}'.format(len(train_push_loader.dataset)))
-    log('test set size: {0}'.format(len(test_loader.dataset)))
+    # log('training set size: {0}'.format(len(train_loader.dataset)))
+    # log('push set size: {0}'.format(len(train_push_loader.dataset)))
+    # log('test set size: {0}'.format(len(test_loader.dataset)))
     log('batch size: {0}'.format(train_batch_size))
     
     #%% construct the model
@@ -199,6 +245,43 @@ def main():
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     from settings import num_train_epochs, num_warm_epochs, push_start, push_epochs
     
+    ################
+    # start k-fold #
+    ################
+    
+    # Separate train and valid_augmented
+    X = np.array(df_augmented.index) # is an array of names
+    group = np.array(df_augmented['patient_id'])
+    y = np.array(df_augmented['label'])
+    
+    y = np.array([0 if elem=='benign' else 1 for elem in y]) #TODO modificare con la stringa opportuna
+    
+    # create the dictionary containing dict = {'img_name': 'img_index'} for the dataset
+    dict_augmented = {key[0]:value for value, key in enumerate(img_augmented_dataset.imgs)}
+    dict_original = {key[0]:value for value, key in enumerate(img_original_dataset.imgs)}
+
+    
+    x = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42) #reproducibility, 5-fold
+    for fold, (train_names, valid_augm_names) in enumerate(x.split(X,y,groups=group)):
+       # train_names e valid_augm_names sono nomi presi da csv, quindi iniziano con ./datasets/...
+       # a quanto pare stasera nel dataset invece prende i path assoluti come nomi, quindi bisogna sostituire /home/andrea.berti/a_e_g/ProtoPNet al . che sta all'inizio della stringa
+      
+       # dato il nome, vedere l'indice nel dataset FATTO (penso)
+       # train_names get prefix -> unique, get those names for push from img_original_dataset
+       train_idx = [dict_augmented[f'/home/andrea.berti/a_e_g/ProtoPNet{name[1:]}'] for name in train_names] ....controllare
+       # valid_augm_idx = [dict_augmented[name] for name in valid_augm_names]
+       
+       train_sampler = SubsetRandomSampler(train_idx)
+       # valid_augm_sampler = SubsetRandomSampler(valid_augm_idx) # questo probabilmente non serve!
+       train_loader = torch.utils.data.DataLoader(img_augmented_dataset, batch_size=train_batch_size, sampler=train_sampler)
+       
+       name_prefixes_push = [name[:100] for name in train_names]
+       push_names = unique(name_prefixes_push)
+       
+       name_prefixes_valid = [name[:100] for name in train_names]
+       valid_names = unique(name_prefixes_valid)
+    #
+    
     # train the model
     log('start training')
     # import copy
@@ -246,8 +329,8 @@ def main():
         accs_noiter_train.append(accu_train)
         losses_noiter_train.append(loss_train)
         
-        save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
-                                    target_accu=0.68, log=log)
+        # save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
+                                    # target_accu=0.68, log=log)
     
         if epoch >= push_start and epoch in push_epochs:
             
