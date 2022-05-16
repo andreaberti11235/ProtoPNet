@@ -257,13 +257,12 @@ def main():
             penultimo = np.mean(loss_npy[-2*window:-window])
             
             if ultimo-penultimo >= 0:
-                triggered_count+=1 #set
-                
+                triggered_count+=1 #set #TODO usa questa linea non quella sotto
             elif ultimo-penultimo < 0:
                 #reset
                 triggered_count=0 
            
-            if triggered_count==2:
+            if triggered_count==4:
                 # Pazienza di un push da quando si triggera la prima volta
                 # a quando esco. Così, l'ultima cartella di immagini salvate
                 # è proprio quella relativa al push triggerante la prima volta.
@@ -341,7 +340,8 @@ def main():
     plt.plot(x_axis,accs_noiter_valid,'*-b',label='Validation')
     # plt.ylim(bottom=0.5,top=1)
     plt.legend()
-    plt.title(f'Accuracy {base_architecture}, earlyStAcc:{np.round(earlystopped_acc, decimals=2)}, bestAcc:{np.round(best_acc, decimals=2)}, imgSize:{img_size}, protPerClass:{num_prots_per_class}, numFilters:{num_filters}\ndropout:{dropout_proportion}, trainBSize:{train_batch_size}, testBSize:{test_batch_size}, pushBSize:{train_push_batch_size}, CE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
+    # plt.title(f'Accuracy {base_architecture}, earlyStAcc:{np.round(earlystopped_acc, decimals=2)}, bestAcc:{np.round(best_acc, decimals=2)}, imgSize:{img_size}, protPerClass:{num_prots_per_class}, numFilters:{num_filters}\ndropout:{dropout_proportion}, trainBSize:{train_batch_size}, testBSize:{test_batch_size}, pushBSize:{train_push_batch_size}, CE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
+    plt.title(f'Accuracy, ESAcc:{np.round(earlystopped_acc, decimals=2)}, BAcc:{np.round(best_acc, decimals=2)}, imSize:{img_size}, Prots:{num_prots_per_class}, Filters:{num_filters}\ndrop:{dropout_proportion}, TrBSize:{train_batch_size}, TeBSize:{test_batch_size}, PBSize:{train_push_batch_size}, CE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.grid()
@@ -352,7 +352,8 @@ def main():
     plt.plot(x_axis,losses_noiter_valid,'*-b',label='Validation')
     # plt.ylim(bottom=0.5,top=1)
     plt.legend()
-    plt.title(f'Loss {base_architecture}\nimgSize:{img_size}, protPerClass:{num_prots_per_class}, numFilters:{num_filters}, dropout:{dropout_proportion}\ntrainBSize:{train_batch_size}, testBSize:{test_batch_size}, pushBSize:{train_push_batch_size}\nCE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
+    # plt.title(f'Loss {base_architecture}\nimgSize:{img_size}, protPerClass:{num_prots_per_class}, numFilters:{num_filters}, dropout:{dropout_proportion}\ntrainBSize:{train_batch_size}, testBSize:{test_batch_size}, pushBSize:{train_push_batch_size}\nCE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
+    plt.title(f'Loss, imSize:{img_size}, Prots:{num_prots_per_class}, Filters:{num_filters}\ndrop:{dropout_proportion}, TrBSize:{train_batch_size}, TeBSize:{test_batch_size}, PBSize:{train_push_batch_size}, CE:{coeff_crs_ent}, CLS:{coeff_clst}, SEP:{coeff_sep}')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.grid()
