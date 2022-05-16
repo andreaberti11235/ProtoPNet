@@ -33,10 +33,10 @@ from sklearn.model_selection import KFold
 
 # from preprocess import mean, std 
 #TODO prenderli corretamente col rispettivo valore calcolato:
-mean = np.float32(np.uint8(np.load('./datasets/mean.npy'))/255)
-std = np.float32(np.uint8(np.load('./datasets/std.npy'))/255)
-# mean = 0.5
-# std = 0.5
+# mean = np.float32(np.uint8(np.load('./datasets/mean.npy'))/255)
+# std = np.float32(np.uint8(np.load('./datasets/std.npy'))/255)
+mean = 0.5
+std = 0.5
 
 
 
@@ -551,6 +551,7 @@ for model_name in model_names:
         # Versione k-fold Cross Validation
         ## Set up the Cross Vaidation framework:
         dataset = ConcatDataset([train_dataset, valid_dataset])
+        # in ppnet non dovremo concatenare, perché faremo due dataset push_e_valid e push_e_valid_augmented
         k=10
         splits=KFold(n_splits=k,shuffle=True,random_state=42)
         
@@ -564,8 +565,8 @@ for model_name in model_names:
             train_sampler = SubsetRandomSampler(train_idx)
             valid_sampler = SubsetRandomSampler(val_idx)
             
-            train_loader = torch.utils.DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
-            valid_loader = torch.utils.DataLoader(dataset, batch_size=batch_size_valid, sampler=valid_sampler)
+            train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
+            valid_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size_valid, sampler=valid_sampler)
             dataloaders_dict = {
                 'train': train_loader,
                 'val': valid_loader    
