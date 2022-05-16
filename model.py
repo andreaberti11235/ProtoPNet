@@ -93,21 +93,26 @@ class PPNet(nn.Module):
                 
                 current_out_channels = max(self.prototype_shape[1], (current_in_channels // 2))
                 
-                # ## TODO versione nostra con aggiunta dei Dropout dopo la relu
-                # add_on_layers.append(nn.Dropout2d(p=dropout_proportion))
-                # #
-                add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
-                                                out_channels=current_out_channels,
-                                                kernel_size=1))
+                # ## PRIMO BLOCCHETTO CONVOLUTIVO
+                # # ## TODO versione nostra con aggiunta dei Dropout dopo la relu
+                # # add_on_layers.append(nn.Dropout2d(p=dropout_proportion))
+                # # #
+                # add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
+                #                                 out_channels=current_out_channels,
+                #                                 kernel_size=1))
                 
-                ##TODO aggiunta batchnorm2d prima della relu
-                add_on_layers.append(nn.BatchNorm2d(current_out_channels))
-                add_on_layers.append(nn.ReLU())
+                # ##TODO aggiunta batchnorm2d prima della relu
+                # add_on_layers.append(nn.BatchNorm2d(current_out_channels))
                 
+                # add_on_layers.append(nn.ReLU())
+                
+ 
                 ## TODO versione nostra con aggiunta dei Dropout dopo la relu
                 add_on_layers.append(nn.Dropout2d(p=dropout_proportion))
                 #
                 
+                
+                ## SECONDO BLOCCHETTO CONVOLUTIVO
                 add_on_layers.append(nn.Conv2d(in_channels=current_out_channels,
                                                 out_channels=current_out_channels,
                                                 kernel_size=1))
