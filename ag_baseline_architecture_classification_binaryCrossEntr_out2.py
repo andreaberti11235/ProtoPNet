@@ -61,7 +61,7 @@ parse.add_argument('run_info', help='Plain-text string of information about the 
 
 args = parse.parse_args()
 
-model_names = [args.model_name+f'_esperimenti_sistematici_{img_size}']#TODO clahe?
+model_names = [args.model_name+f'_esperimenti_sistematici_{img_size}_clahe']#TODO clahe?
 lr = [args.lr]
 wd = [args.wd]
 dropout_rate = [args.dr]
@@ -233,7 +233,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                     
                     if prima_volta:
                         prima_volta = False
-                        thresh = deriv_w[0]*0.10
+                        thresh = deriv_w[0]*0.10 #TODO
                     
                     if deriv_w[-1] < thresh:
                         print(f'DETECTION DI VALORE SOTTOSOGLIA, con soglia {thresh}')
@@ -302,7 +302,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         set_parameter_requires_grad(model_ft, feature_extract)
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Linear(num_ftrs, num_classes)
-        #tODO 11 aprile 2022: idea di semplificare la base architecture per ridurre il numero di out_features uscente e di conseguenza il numero di filtri necessari ai successivi layer FC
+        ##TODO 11 aprile 2022: idea di semplificare la base architecture per ridurre il numero di out_features uscente e di conseguenza il numero di filtri necessari ai successivi layer FC
         if num_dropouts==1:
             model_ft.fc = nn.Sequential(
     
@@ -350,27 +350,12 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
             
             
             # #Fully connected
-                nn.Linear(num_ftrs,128),
-                nn.ReLU(),
-                
-                # nn.Dropout(p=dropout_rate), #TODO
-                
-                nn.Linear(128,10),
-                nn.ReLU(),
-                
-                #Dropout
-                nn.Dropout(p=dropout_rate),
-                
-                # Classification layer
-                nn.Linear(10, num_classes),
-                # nn.Softmax() 
-                nn.Sigmoid()
-                )
+            # nn.Linear(num_ftrs,128),
+            # nn.ReLU(),
             
-        
+            # # nn.Dropout(p=dropout_rate), #TODO
             
-            # #Fully connected
-            # nn.Linear(num_ftrs,10),
+            # nn.Linear(128,10),
             # nn.ReLU(),
             
             # #Dropout
@@ -381,6 +366,21 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
             # # nn.Softmax() 
             # nn.Sigmoid()
             # )
+        
+        
+            
+                #Fully connected
+                nn.Linear(num_ftrs,10),
+                nn.ReLU(),
+                
+                #Dropout
+                nn.Dropout(p=dropout_rate),
+                
+                # Classification layer
+                nn.Linear(10, num_classes),
+                # nn.Softmax() 
+                nn.Sigmoid()
+                )
         
         input_size = img_size  
 
@@ -608,7 +608,6 @@ for model_name in model_names:
  
         # Send the model to GPU
         model_ft = model_ft.to(device)
-        # model_ft_multi = torch.nn.DataParallel(model_ft) #TODO
         
         params_to_update = model_ft.parameters()
         print("Params to learn:")
