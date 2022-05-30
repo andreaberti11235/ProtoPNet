@@ -18,15 +18,18 @@ num_layers_to_train = 20 #TODO aggiunto da noi
 dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
-train_dir = data_path + 'push_augmented/' #
+# train_dir = data_path + 'push_augmented/' #
+original_dir = data_path + 'push_e_valid_MLO/push_e_valid/' #
 # train_dir = data_path + 'push/' # TODO
+
 
 
 test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
 
-train_push_dir = data_path + 'push/' #
+# train_push_dir = data_path + 'push/' #
+augm_dir = data_path + 'push_e_valid_MLO_augmented/' #
 train_batch_size = 40 #40
 test_batch_size = 2
 train_push_batch_size = 40 #90 #40 #4
@@ -48,7 +51,7 @@ coefs = {
     'l1': 1e-4
 }
 
-num_train_epochs = 1000 #TODO era 1000 con EarlyStopping
+num_train_epochs = 100 #TODO era 1000 con EarlyStopping
 num_warm_epochs = 5
 
 push_start = 10
