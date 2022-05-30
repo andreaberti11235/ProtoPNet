@@ -29,15 +29,16 @@ base_architecture_to_features = {'resnet18': resnet18_features,
                                  'vgg19_bn': vgg19_bn_features}
 
 
-#
-from settings import dropout_proportion
-#
+# #
+# from settings import dropout_proportion
+# #
 
 
 class PPNet(nn.Module):    
 
     def __init__(self, features, img_size, prototype_shape,
-                 proto_layer_rf_info, num_classes, init_weights=True,
+                 proto_layer_rf_info, num_classes, dropout_proportion=0.4, 
+                 init_weights=True,
                  prototype_activation_function='log',
                  add_on_layers_type='bottleneck'):
 
@@ -46,6 +47,7 @@ class PPNet(nn.Module):
         self.prototype_shape = prototype_shape
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
+        self.dropout_proportion = dropout_proportion
         self.epsilon = 1e-4
         
         # prototype_activation_function could be 'log', 'linear',
@@ -93,18 +95,18 @@ class PPNet(nn.Module):
                 
                 current_out_channels = max(self.prototype_shape[1], (current_in_channels // 2))
                 
-                # ## PRIMO BLOCCHETTO CONVOLUTIVO
-                # # ## TODO versione nostra con aggiunta dei Dropout dopo la relu
-                # # add_on_layers.append(nn.Dropout2d(p=dropout_proportion))
-                # # #
-                # add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
-                #                                 out_channels=current_out_channels,
-                #                                 kernel_size=1))
+                ## PRIMO BLOCCHETTO CONVOLUTIVO
+                # ## TODO versione nostra con aggiunta dei Dropout dopo la relu
+                # add_on_layers.append(nn.Dropout2d(p=dropout_proportion))
+                # #
+                add_on_layers.append(nn.Conv2d(in_channels=current_in_channels,
+                                                out_channels=current_out_channels,
+                                                kernel_size=1))
                 
-                # ##TODO aggiunta batchnorm2d prima della relu
-                # add_on_layers.append(nn.BatchNorm2d(current_out_channels))
+                ##TODO aggiunta batchnorm2d prima della relu
+                add_on_layers.append(nn.BatchNorm2d(current_out_channels))
                 
-                # add_on_layers.append(nn.ReLU())
+                add_on_layers.append(nn.ReLU())
                 
  
                 ## TODO versione nostra con aggiunta dei Dropout dopo la relu
@@ -327,6 +329,7 @@ class PPNet(nn.Module):
 
 def construct_PPNet(base_architecture, pretrained=True, img_size=224,
                     prototype_shape=(2000, 512, 1, 1), num_classes=200,
+                    dropout_proportion=0.4,
                     prototype_activation_function='log',
                     add_on_layers_type='bottleneck'):
     features = base_architecture_to_features[base_architecture](pretrained=pretrained)
@@ -341,6 +344,7 @@ def construct_PPNet(base_architecture, pretrained=True, img_size=224,
                  prototype_shape=prototype_shape,
                  proto_layer_rf_info=proto_layer_rf_info,
                  num_classes=num_classes,
+                 dropout_proportion=dropout_proportion,
                  init_weights=True,
                  prototype_activation_function=prototype_activation_function,
                  add_on_layers_type=add_on_layers_type)
