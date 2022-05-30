@@ -59,7 +59,7 @@ model_base_architecture = load_model_dir.split('/')[2]
 experiment_run = '/'.join(load_model_dir.split('/')[3:])
 
 save_analysis_path = os.path.join(test_image_dir, model_base_architecture,
-                                  experiment_run, load_model_name)
+                                  experiment_run, load_model_name, test_image_name[:-4]) # TODO aggiunta l'ultima indentazione
 makedir(save_analysis_path)
 
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))

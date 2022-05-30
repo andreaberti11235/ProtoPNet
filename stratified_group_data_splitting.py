@@ -30,7 +30,7 @@ ieri ho provato a runnare questo:
          print("      ", labels[train_idxs])
          print(" TEST:", new_list[test_idxs])
          print("      ", labels[test_idxs])
- ma da errore sul for: devo usare come X le immagini proprio, e non i nomi??       
+ ma dà errore sul for: devo usare come X le immagini proprio, e non i nomi??       
 @author: evapa
 """
 
