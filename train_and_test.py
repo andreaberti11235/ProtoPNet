@@ -3,7 +3,7 @@ import torch
 from tqdm import tqdm
 from helpers import list_of_distances, make_one_hot
 import numpy as np
-from settings import num_layers_to_train
+# from settings import num_layers_to_train
 
 def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l1_mask=True,
                    coefs=None, log=print):
@@ -178,7 +178,7 @@ def warm_only(model, log=print):
     log('\twarm')
 
 
-def joint(model, log=print):
+def joint(model, num_layers_to_train, log=print):
     t = 0
     for p in model.module.features.modules():
         # count the number of conv2d layers in the baseline model
