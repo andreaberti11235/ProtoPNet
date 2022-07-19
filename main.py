@@ -246,8 +246,7 @@ def main():
         accs_noiter_train.append(accu_train)
         losses_noiter_train.append(loss_train)
         
-        save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
-                                    target_accu=0.68, log=log)
+        # save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu, target_accu=0.5, log=log)
     
         if epoch >= push_start and epoch in push_epochs:
             
@@ -257,7 +256,8 @@ def main():
             penultimo = np.mean(loss_npy[-2*window:-window])
             
             if ultimo-penultimo >= 0:
-                triggered_count+=1 #set #TODO usa questa linea non quella sotto
+                # triggered_count+=1 #set #TODO usa questa linea non quella sotto
+                triggered_count=0
             elif ultimo-penultimo < 0:
                 #reset
                 triggered_count=0 
@@ -292,11 +292,20 @@ def main():
             accs_noiter_train.append(accu_train)
             losses_noiter_train.append(loss_train)  
             
-            if triggered_count==1:
-                earlystopped_acc = accu  
-                best_acc = earlystopped_acc
-                save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
-                                            target_accu=0.50, log=log)
+            
+            
+            # if triggered_count==1:
+            #     earlystopped_acc = accu  
+            #     best_acc = earlystopped_acc
+            #     save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
+            #                                 target_accu=0.50, log=log)
+            
+            earlystopped_acc = accu  
+            best_acc = earlystopped_acc
+            save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
+                                        target_accu=0.50, log=log)
+            
+            
             
             
             
