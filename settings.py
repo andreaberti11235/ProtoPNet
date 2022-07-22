@@ -19,17 +19,17 @@ dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
-original_dir = data_path + 'push_e_valid_MLO/push_e_valid/' #
+original_dir = data_path + 'tutte_MLO' #
 # train_dir = data_path + 'push/' # TODO
 
 
 
-test_dir = data_path + 'valid' #'valid/' #
+# test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
 
 # train_push_dir = data_path + 'push/' #
-augm_dir = data_path + 'push_e_valid_MLO_augmented/' #
+augm_dir = data_path + 'tutte_MLO_augmented' #
 train_batch_size = 40 #40
 test_batch_size = 2
 train_push_batch_size = 40 #90 #40 #4
