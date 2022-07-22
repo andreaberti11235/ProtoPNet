@@ -116,15 +116,21 @@ def main():
     N = 30
     chosen_configurations = get_N_HyperparamsConfigs(N=N)
     
-    for idx, config in enumerate(chosen_configurations[20:23]): # TODO
+    # idx_list = [20, 29, 27, 3, 26, 2, 19, 1, 21, 24, 4, 23, 28]
+    idx_list = [8, 5, 9, 0, 22, 25]
+    idx_list.reverse()
+    chosen_configurations2 = [chosen_configurations[i] for i in idx_list]
+    
+    for idx, config in enumerate(chosen_configurations2): # TODO
         
+        idx = idx_list[idx]
         # #TODO
         # temp = [23, 24, 25, 26]
         # idx = temp[idx]
         # #
         # if idx == 25:
         #     continue
-        idx += 20
+        # idx += 20
         
         experiment_run = f'{experiment_task}_{time.strftime("%a_%d_%b_%Y_%H:%M:%S", time.gmtime())}_config{idx}'
         lr_features = config[0]
@@ -141,8 +147,10 @@ def main():
         prototype_shape = (num_classes*num_prots_per_class, num_filters, 1, 1)
         base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
         
-        model_dir = './saved_models/' + base_architecture + '/' + experiment_run + '/'
-        makedir(model_dir)
+        model_dir = './saved_models_review/' + base_architecture + '/' + experiment_run + '/'
+        
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
         #TODO scrittura di un file di informazioni sulla run in oggetto
         with open(os.path.join(model_dir,'run_info.txt'),'w') as fout:
             fout.write(f'{args.runinfo}')
@@ -177,8 +185,8 @@ def main():
         # from model import dropout_proportion # aggiunta noi questa variabile SBAGLIATO, STA IN SETTINGS
         # TODO SISTEMARE
         from settings import data_path
-        path_to_csv = os.path.join(data_path, 'push_e_valid_MLO', 'push_e_valid_MLO_bm.csv')
-        path_to_csv_augmented = os.path.join(augm_dir, 'push_e_valid_MLO_augmented_bm.csv')
+        path_to_csv = os.path.join(original_dir, 'push_e_valid_MLO_bm.csv')
+        path_to_csv_augmented = os.path.join(augm_dir, 'push_e_valid_MLO_augmented_deep_bm.csv')
         df_original = pd.read_csv(path_to_csv, sep=',', index_col='file_name')
         df_augmented = pd.read_csv(path_to_csv_augmented, sep=',', index_col='file_name')
     
@@ -213,46 +221,7 @@ def main():
                 transforms.ToTensor(),
                 normalize,
             ]))
-        # train set
-        # train_dataset = datasets.ImageFolder(
-        #     train_dir,
-        #     transforms.Compose([
-        #         transforms.Grayscale(num_output_channels=3), #TODO
-        #         transforms.Resize(size=(img_size, img_size)),
-        #         transforms.ToTensor(),
-        #         normalize,
-        #     ]))
-        # train_loader = torch.utils.data.DataLoader(
-        #     train_dataset, batch_size=train_batch_size, shuffle=True,
-        #     num_workers=workers, pin_memory=False) #TODO cambiare num_workers=4*num_gpu
-        # # push set
-        # train_push_dataset = datasets.ImageFolder(
-        #     train_push_dir,
-        #     transforms.Compose([
-        #         transforms.Grayscale(num_output_channels=3),
-        #         transforms.Resize(size=(img_size, img_size)),
-        #         transforms.ToTensor(),
-        #     ]))
-        # train_push_loader = torch.utils.data.DataLoader(
-        #     train_push_dataset, batch_size=train_push_batch_size, shuffle=False,
-        #     num_workers=workers, pin_memory=False)
-        # # test set
-        # test_dataset = datasets.ImageFolder(
-        #     test_dir,
-        #     transforms.Compose([
-        #         transforms.Grayscale(num_output_channels=3),
-        #         transforms.Resize(size=(img_size, img_size)),
-        #         transforms.ToTensor(),
-        #         normalize,
-        #     ]))
-        # test_loader = torch.utils.data.DataLoader(
-        #     test_dataset, batch_size=test_batch_size, shuffle=True, #TODO messo True, era falso
-        #     num_workers=workers, pin_memory=False)
-        
-        # we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
-        # log('training set size: {0}'.format(len(train_loader.dataset)))
-        # log('push set size: {0}'.format(len(train_push_loader.dataset)))
-        # log('test set size: {0}'.format(len(test_loader.dataset)))
+ 
         log('batch size: {0}'.format(train_batch_size))
         
         #%% construct the model
@@ -368,7 +337,7 @@ def main():
                 os.makedirs(out_dir_fold)
             
             log2, logclose2 = create_logger(log_filename=os.path.join(out_dir_fold, f'train{fold}.log'))
-            log2(f'Starting FOLD {fold}/{k} of CONFIGURATION {idx}/{len(chosen_configurations)}')
+            log2(f'Starting FOLD {fold}/{k} of CONFIGURATION {idx}/{len(chosen_configurations2)}')
             
             img_dir = os.path.join(out_dir_fold, 'img')
             makedir(img_dir)
@@ -623,9 +592,11 @@ def main():
             
         best_val_accuracy_folds_npy = np.array(best_val_accuracy_folds)
         mean_val_accuracy_configuration = np.mean(best_val_accuracy_folds_npy)
+        std_val_accuracy_configuration = np.std(best_val_accuracy_folds_npy)
         with open(os.path.join(model_dir,'configuratrion_params.txt'),'a') as fout:
             fout.write('\n')
             fout.write(f'mean_val_acc={mean_val_accuracy_configuration}\n')
+            fout.write(f'std_val_acc={std_val_accuracy_configuration}\n')
             fout.write(f'Folds_val_accu={best_val_accuracy_folds_npy}\n')
         np.save(os.path.join(model_dir, 'mean_val_accuracy.npy'), mean_val_accuracy_configuration)
         logclose()
