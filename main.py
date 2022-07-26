@@ -117,7 +117,9 @@ def main():
     chosen_configurations = get_N_HyperparamsConfigs(N=N)
     
     # idx_list = [20, 29, 27, 3, 26, 2, 19, 1, 21, 24, 4, 23, 28]
-    idx_list = [8, 5, 9, 0, 22, 25]
+    # idx_list = [17, 10, 14, 11, 12]
+    idx_list = [15, 6, 13, 16]
+    
     idx_list.reverse()
     chosen_configurations2 = [chosen_configurations[i] for i in idx_list]
     
