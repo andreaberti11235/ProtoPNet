@@ -59,7 +59,7 @@ def main():
     
     base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
     
-    model_dir = './saved_models/' + base_architecture + '/' + experiment_run + '/'
+    model_dir = './saved_models_review/' + base_architecture + '/' + experiment_run + '/' # TODO
     makedir(model_dir)
     ##TODO scrittura di un file di informazioni sulla run in oggetto
     with open(os.path.join(model_dir,'run_info.txt'),'w') as fout:
