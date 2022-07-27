@@ -107,6 +107,15 @@ if check_test_accu:
     accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
                     class_specific=class_specific, log=print)
 
+
+
+
+
+
+
+
+
+
 ##### SANITY CHECK
 # confirm prototype class identity
 load_img_dir = os.path.join(load_model_dir, 'img')
