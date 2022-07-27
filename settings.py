@@ -6,7 +6,7 @@ base_architecture = 'resnet18' #'resnet50'
 
 img_size = 224 #124# 224 #336
 num_classes = 2 
-num_prots_per_class = 20 #40 #TODO
+num_prots_per_class = 40 #40 #TODO
 num_filters = 512 #256 #128 #256 #TODO
 prototype_shape = (num_classes*num_prots_per_class, num_filters, 1, 1) #40 #60 #16 #40
 prototype_activation_function = 'log'
@@ -19,7 +19,7 @@ dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
-train_dir = data_path + 'push_e_valid_MLO_augmented/' #
+train_dir = data_path + 'push_e_valid_MLO_augmented_deep/' #
 # train_dir = data_path + 'push/' # TODO
 
 
@@ -46,9 +46,9 @@ last_layer_optimizer_lr = 1e-06 #1e-4
 
 coefs = {
     'crs_ent': 1,
-    'clst': 0.8, #0.95, #0.8,
+    'clst': 0.9, #0.95, #0.8,
     'sep': -0.05, #-0.05, #-0.08,
-    'l1': 1e-4
+    'l1': 1e-5
 }
 
 num_train_epochs = 42 #TODO era 1000 con EarlyStopping
