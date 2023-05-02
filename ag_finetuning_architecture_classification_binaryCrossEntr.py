@@ -85,8 +85,8 @@ patience = int(np.ceil(12/window)) #3
 
 print('CUDA visible devices, before and after setting possible multiple GPUs (sanity check):')
 # print(os.environ['CUDA_VISIBLE_DEVICES'])
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1' #TODO
-# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,1' #TODO
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 print(os.environ['CUDA_VISIBLE_DEVICES'])
 
 os_env_cudas = os.environ['CUDA_VISIBLE_DEVICES']
@@ -280,67 +280,67 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
 
 
 def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train):
-    ## Versione: decongelare un numero desiderato di layer a partire dal fondo
-    # if feature_extracting:
-    #     t = 0
-    #     for child in model.modules():
-    #         if isinstance(child,nn.Conv2d):
-    #             t+=1
-    #     print(f'Total number of Conv2d layers in the model: {t}')
-        
-    #     c = 0
-    #     for child in model.modules():
-    #         for param in child.parameters(): #first, freeze all the layers from the top
-    #             param.requires_grad = False
-                
-    #         if isinstance(child,nn.Conv2d):
-    #             c+=1
-    #         if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
-    #             for param in child.parameters():
-    #                 param.requires_grad = True
-    
-    
-    
-    ## Versione per introdurre Dropout2d intermedi frai vari Conv2d
+    # Versione: decongelare un numero desiderato di layer a partire dal fondo
     if feature_extracting:
         t = 0
         for child in model.modules():
             if isinstance(child,nn.Conv2d):
                 t+=1
-                
-        print(f'Conv2d layers re-trained in the model: {num_layers_to_train}/{t}')
+        print(f'Total number of Conv2d layers in the model: {t}')
         
         c = 0
-        c_dropout = 0
-        is_first_time = True
-        
-        #
-        for name,child in model.named_modules():
-            splits = name.split('.')
-            
-            if is_first_time:
-                is_first_time = False
-                ## TODO: Versione tutta congelata e alcuni decongelati
-                for param in child.parameters(): #first, freeze all the layers from the top
-                   
-                    param.requires_grad = False
-   
-                    
-                # ## TODO: Versione tutta viene riallenata
-                # for param in child.parameters():
-                #     if param.requires_grad is not True:
-                #         print(f'{name} non era TRUE')
-                #         param.requires_grad = True
+        for child in model.modules():
+            for param in child.parameters(): #first, freeze all the layers from the top
+                param.requires_grad = False
                 
             if isinstance(child,nn.Conv2d):
                 c+=1
-            
-            assert(t>=num_layers_to_train)
-            
             if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
                 for param in child.parameters():
-                    param.requires_grad = True 
-        #
+                    param.requires_grad = True
+    
+    
+    
+    # ## Versione per introdurre Dropout2d intermedi frai vari Conv2d
+    # if feature_extracting:
+    #     t = 0
+    #     for child in model.modules():
+    #         if isinstance(child,nn.Conv2d):
+    #             t+=1
+                
+    #     print(f'Conv2d layers re-trained in the model: {num_layers_to_train}/{t}')
+        
+    #     c = 0
+    #     c_dropout = 0
+    #     is_first_time = True
+        
+    #     #
+    #     for name,child in model.named_modules():
+    #         splits = name.split('.')
+            
+    #         if is_first_time:
+    #             is_first_time = False
+    #             ## TODO: Versione tutta congelata e alcuni decongelati
+    #             for param in child.parameters(): #first, freeze all the layers from the top
+                   
+    #                 param.requires_grad = False
+   
+                    
+    #             # ## TODO: Versione tutta viene riallenata
+    #             # for param in child.parameters():
+    #             #     if param.requires_grad is not True:
+    #             #         print(f'{name} non era TRUE')
+    #             #         param.requires_grad = True
+                
+    #         if isinstance(child,nn.Conv2d):
+    #             c+=1
+            
+    #         assert(t>=num_layers_to_train)
+            
+    #         if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
+    #             for param in child.parameters():
+    #                 param.requires_grad = True 
+    #     # FINISCE QUI
         
         
         
@@ -407,7 +407,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         num_ftrs = model_ft.fc.in_features
         
         ##Version 1
-        model_ft.fc = nn.Sequential(
+        model_ft.fc = nn.Sequential( # replace the original fully connected
             nn.Dropout(p=dropout_rate), #TODO added some dropout
             nn.Linear(num_ftrs, num_classes),
             nn.Sigmoid()
@@ -436,10 +436,6 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         #         nn.Linear(64, num_classes),                
         #         nn.Sigmoid()
         #         )
-        
-        
-        
-        
         
         
         
@@ -649,6 +645,19 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
             nn.Sigmoid()
             )
         input_size = img_size
+
+    if model_name == "alexnet":
+        """ Alexnet
+        """
+        model_ft = models.alexnet(pretrained=use_pretrained)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        num_ftrs = model_ft.classifier[6].in_features
+        # model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
+        model_ft.classifier[6] = nn.Sequential(
+            nn.Linear(num_ftrs,num_classes),
+            nn.Sigmoid()
+            )
+        input_size = img_size
         
 
 
@@ -677,7 +686,7 @@ for model_name in model_names:
         test_batch_size = batch_size_valid
         
        
-        experiment_run = f'CBIS_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
+        experiment_run = f'DBT_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
         output_dir = f'./saved_models_baseline/{model_name}/{experiment_run}'
         
         if not os.path.exists(output_dir):
