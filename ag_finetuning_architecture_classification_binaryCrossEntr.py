@@ -25,7 +25,7 @@ from time import gmtime,strftime
 
 
 data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmented') #
+train_dir = os.path.join(data_path,'push_augmentor') #
 test_dir = os.path.join(data_path,'valid') #'valid/' #
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
@@ -71,7 +71,7 @@ run_info_to_be_written = args.run_info
 # wd = [1e-3] #[5e-3]
 # dropout_rate = [0.5]
 
-batch_size = [40] #TODO 
+batch_size = [10] #TODO 
 batch_size_valid = 2
 # joint_lr_step_size = [2, 5, 10]
 # gamma_value = [0.10, 0.50, 0.25]
