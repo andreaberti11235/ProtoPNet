@@ -68,7 +68,8 @@ dropout_rate = [args.dr]
 # num_dropouts = args.num_dropouts
 run_info_to_be_written = args.run_info
 
-use_pretrained = args.pretrained
+pretrained = args.pretrained
+#pretrained = True
 
 # lr=[1e-6]
 # wd = [1e-3] #[5e-3]
@@ -753,7 +754,7 @@ for model_name in model_names:
         #print(f'model_name={model_name[:9]}')
         # Initialize the model for this run
         # model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True)
-        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=use_pretrained)
+        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=pretrained)
 
         with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
             f_out.write(f'{model_ft}')
