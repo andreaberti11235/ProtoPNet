@@ -284,109 +284,109 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
 
 
 def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train):
-    # Versione: decongelare un numero desiderato di layer a partire dal fondo
-    if feature_extracting:
-        t = 0
-        for child in model.modules():
-            if isinstance(child,nn.Conv2d):
-                t+=1
-        print(f'Total number of Conv2d layers in the model: {t}')
-        
-        c = 0
-        for child in model.modules():
-            for param in child.parameters(): #first, freeze all the layers from the top
-                param.requires_grad = False
-                
-            if isinstance(child,nn.Conv2d):
-                c+=1
-            if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
-                for param in child.parameters():
-                    param.requires_grad = True
-    
-    
-    
-    # ## Versione per introdurre Dropout2d intermedi frai vari Conv2d
+    # # Versione: decongelare un numero desiderato di layer a partire dal fondo
     # if feature_extracting:
     #     t = 0
     #     for child in model.modules():
     #         if isinstance(child,nn.Conv2d):
     #             t+=1
-                
-    #     print(f'Conv2d layers re-trained in the model: {num_layers_to_train}/{t}')
+    #     print(f'Total number of Conv2d layers in the model: {t}')
         
     #     c = 0
-    #     c_dropout = 0
-    #     is_first_time = True
-        
-    #     #
-    #     for name,child in model.named_modules():
-    #         splits = name.split('.')
-            
-    #         if is_first_time:
-    #             is_first_time = False
-    #             ## TODO: Versione tutta congelata e alcuni decongelati
-    #             for param in child.parameters(): #first, freeze all the layers from the top
-                   
-    #                 param.requires_grad = False
-   
-                    
-    #             # ## TODO: Versione tutta viene riallenata
-    #             # for param in child.parameters():
-    #             #     if param.requires_grad is not True:
-    #             #         print(f'{name} non era TRUE')
-    #             #         param.requires_grad = True
+    #     for child in model.modules():
+    #         for param in child.parameters(): #first, freeze all the layers from the top
+    #             param.requires_grad = False
                 
     #         if isinstance(child,nn.Conv2d):
     #             c+=1
-            
-    #         assert(t>=num_layers_to_train)
-            
     #         if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
     #             for param in child.parameters():
-    #                 param.requires_grad = True 
-    #     # FINISCE QUI
+    #                 param.requires_grad = True
+    
+    
+    
+    ## Versione per introdurre Dropout2d intermedi frai vari Conv2d
+    if feature_extracting:
+        t = 0
+        for child in model.modules():
+            if isinstance(child,nn.Conv2d):
+                t+=1
+                
+        print(f'Conv2d layers re-trained in the model: {num_layers_to_train}/{t}')
+        
+        c = 0
+        c_dropout = 0
+        is_first_time = True
+        
+        #
+        for name,child in model.named_modules():
+            splits = name.split('.')
+            
+            if is_first_time:
+                is_first_time = False
+                ## TODO: Versione tutta congelata e alcuni decongelati
+                for param in child.parameters(): #first, freeze all the layers from the top
+                   
+                    param.requires_grad = False
+   
+                    
+                # ## TODO: Versione tutta viene riallenata
+                # for param in child.parameters():
+                #     if param.requires_grad is not True:
+                #         print(f'{name} non era TRUE')
+                #         param.requires_grad = True
+                
+            if isinstance(child,nn.Conv2d):
+                c+=1
+            
+            assert(t>=num_layers_to_train)
+            
+            if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
+                for param in child.parameters():
+                    param.requires_grad = True 
+        # FINISCE QUI
         
         
         
-        # model_copy = copy.deepcopy(model)
+        model_copy = copy.deepcopy(model)
         
-        # for name,child in model_copy.named_modules():
-        #     splits = name.split('.')
+        for name,child in model_copy.named_modules():
+            splits = name.split('.')
 
                 
-        #     if isinstance(child,nn.Conv2d):
-        #         c+=1
+            if isinstance(child,nn.Conv2d):
+                c+=1
             
-        #     assert(t>=num_layers_to_train)
+            assert(t>=num_layers_to_train)
             
-        #     if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
+            if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
                     
-        #         # if isinstance(child,nn.Conv2d) and splits[-1]=='conv1': #TODO conv1
+                if isinstance(child,nn.Conv2d) and splits[-1]=='conv1': #TODO conv1
                    
-        #         #     c_dropout += 1
+                    c_dropout += 1
                     
-        #         #     # if c_dropout <= 3: #TODO i primi 3
-        #         #     #     new_module = nn.Sequential(
-        #         #     #             child,
-        #         #     #             nn.Dropout2d(p=dropout_rate))
+                    # if c_dropout <= 3: #TODO i primi 3
+                    #     new_module = nn.Sequential(
+                    #             child,
+                    #             nn.Dropout2d(p=dropout_rate))
     
-        #         #     #     if len(splits)==1:
-        #         #     #         setattr(model, name, new_module)
-        #         #     #     elif len(splits)==3:
-        #         #     #         setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)
-        #         #     #     # #
-        #         #     #     # elif len(splits)==4:
-        #         #     #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
+                    #     if len(splits)==1:
+                    #         setattr(model, name, new_module)
+                    #     elif len(splits)==3:
+                    #         setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)
+                    #     # #
+                    #     # elif len(splits)==4:
+                    #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
                     
-        #         #     if c_dropout > 9 - 3: # hardcode 9 e 3; TODO gli ultimi 3
-        #         #         new_module = nn.Sequential(
-        #         #                 child,
-        #         #                 nn.Dropout2d(p=dropout_rate))
+                    if c_dropout > 9 - 3: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                        new_module = nn.Sequential(
+                                child,
+                                nn.Dropout2d(p=dropout_rate))
     
-        #         #         if len(splits)==1:
-        #         #             setattr(model, name, new_module)
-        #         #         elif len(splits)==3:
-        #         #             setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)      
+                        if len(splits)==1:
+                            setattr(model, name, new_module)
+                        elif len(splits)==3:
+                            setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)      
       
                   
         # ## Versione iniziale:
