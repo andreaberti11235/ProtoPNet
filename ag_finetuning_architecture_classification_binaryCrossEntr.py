@@ -26,7 +26,7 @@ from time import gmtime,strftime
 
 data_path = os.path.join(os.getcwd(),'datasets') #
 train_dir = os.path.join(data_path,'push_augmentor') #
-test_dir = os.path.join(data_path,'valid') #'valid/' #
+test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
@@ -54,6 +54,7 @@ parse.add_argument('dr', help='dropout rate',type=float)
 # parse.add_argument('num_dropouts',help='Number of dropout layers in the bottleneck of ResNet18, if 1 uses one, if 2 uses two.', type=int)
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt',type=str)
+parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model.', action='store_true')
 
 args = parse.parse_args()
 
@@ -66,6 +67,8 @@ wd = [args.wd]
 dropout_rate = [args.dr]
 # num_dropouts = args.num_dropouts
 run_info_to_be_written = args.run_info
+
+use_pretrained = args.pretrained
 
 # lr=[1e-6]
 # wd = [1e-3] #[5e-3]
@@ -750,7 +753,7 @@ for model_name in model_names:
         #print(f'model_name={model_name[:9]}')
         # Initialize the model for this run
         # model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True)
-        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=True)
+        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=use_pretrained)
 
         with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
             f_out.write(f'{model_ft}')
