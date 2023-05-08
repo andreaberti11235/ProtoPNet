@@ -48,9 +48,10 @@ parse = argparse.ArgumentParser(description="")
 
 parse.add_argument('model_name', help='Name of the baseline architecture: resnet18, resnet34, resnet50, vgg..',type=str)
 parse.add_argument('num_layers_to_train', help='Number of contigual conv2d layers to train beginning from the end of the model up',type=int)
-parse.add_argument('lr', help='learning rate',type=float)
-parse.add_argument('wd', help='weight decay',type=float)
-parse.add_argument('dr', help='dropout rate',type=float)
+parse.add_argument('lr', help='Learning rate',type=float)
+parse.add_argument('wd', help='Weight decay',type=float)
+parse.add_argument('dr', help='Dropout rate to be added after fully connected layers',type=float)
+parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers',type=float)
 # parse.add_argument('num_dropouts',help='Number of dropout layers in the bottleneck of ResNet18, if 1 uses one, if 2 uses two.', type=int)
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt',type=str)
@@ -65,6 +66,7 @@ model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers
 lr = [args.lr]
 wd = [args.wd]
 dropout_rate = [args.dr]
+dropout2d_rate = [args.d2Dr]
 # num_dropouts = args.num_dropouts
 run_info_to_be_written = args.run_info
 
@@ -112,20 +114,21 @@ set_seed(seed=1)
 
 
 
-N = len(lr) * len(wd) * len(dropout_rate) * len(batch_size)
+N = len(lr) * len(wd) * len(dropout_rate) * len(batch_size) * len(dropout2d_rate)
 #* len(joint_lr_step_size) * len(gamma_value)
 
 # def get_N_HyperparamsConfigs(N=0, lr=lr, wd=wd, joint_lr_step_size=joint_lr_step_size,
 #                              gamma_value=gamma_value):
-def get_N_HyperparamsConfigs(N=0, lr=lr, wd=wd, dropout_rate=dropout_rate):
+def get_N_HyperparamsConfigs(N=0, lr=lr, wd=wd, dropout_rate=dropout_rate, dropout2d_rate=dropout2d_rate):
     configurations = {}
     h = 1
     for i in lr:
         for j in wd:
             for k in dropout_rate:
                 for l in batch_size:
-                    configurations[f'config_{h}'] = [i, j, k, l]
-                    h += 1
+                    for m in dropout2d_rate:
+                        configurations[f'config_{h}'] = [i, j, k, l, m]
+                        h += 1
     
                      
     configurations_key = list(configurations.keys())
@@ -283,7 +286,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
 
 
 
-def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train):
+def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, dropout2d_rate):
     # # Versione: decongelare un numero desiderato di layer a partire dal fondo
     # if feature_extracting:
     #     t = 0
@@ -378,10 +381,11 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train):
                     #     # elif len(splits)==4:
                     #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
                     
-                    if c_dropout > 9 - 3: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                    if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                        # modificato 3 con 1 per aggiungere 1 solo layer di dropout
                         new_module = nn.Sequential(
                                 child,
-                                nn.Dropout2d(p=dropout_rate))
+                                nn.Dropout2d(p=dropout2d_rate))
     
                         if len(splits)==1:
                             setattr(model, name, new_module)
@@ -395,7 +399,7 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train):
         
            
             
-def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=True):
+def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, dropout2d_rate, use_pretrained=True):
 # def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True):
     # Initialize these variables which will be set in this if statement. Each of these
     #   variables is model specific.
@@ -407,7 +411,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ Resnet18
         """
         model_ft = models.resnet18(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.fc.in_features
         
         ##Version 1
@@ -529,7 +533,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ Resnet34
         """
         model_ft = models.resnet34(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Sequential(
             nn.Dropout(p=dropout_rate),
@@ -642,7 +646,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ VGG19
         """
         model_ft = models.vgg19(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate)
         num_ftrs = model_ft.classifier[6].in_features
         model_ft.classifier[6] = nn.Sequential(
             nn.Linear(num_ftrs,num_classes),
@@ -654,7 +658,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ Alexnet
         """
         model_ft = models.alexnet(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.classifier[6].in_features
         # model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
         model_ft.classifier[6] = nn.Sequential(
@@ -686,6 +690,7 @@ for model_name in model_names:
         wd = config[1]
         dropout_rate = config[2]
         batch_size = config[3]
+        dropout2d_rate = config[4]
         train_batch_size = batch_size
         test_batch_size = batch_size_valid
         
@@ -754,7 +759,8 @@ for model_name in model_names:
         #print(f'model_name={model_name[:9]}')
         # Initialize the model for this run
         # model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True)
-        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_layers_to_train, use_pretrained=pretrained)
+        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, 
+                                                dropout_rate, num_layers_to_train, dropout2d_rate=dropout2d_rate, use_pretrained=pretrained)
 
         with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
             f_out.write(f'{model_ft}')
@@ -796,10 +802,10 @@ for model_name in model_names:
         num_dropouts=999 #fake number to exclude num_dropouts in further experiments...
         if not os.path.exists(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt'):
             with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'w') as out_file:
-                out_file.write('{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+                out_file.write('{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
 
         with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'a') as out_file: #TODO ricordati di cambiare il nome del txt se cambia esperimento
-            out_file.write(f'{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+            out_file.write(f'{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
 
         
         
@@ -814,7 +820,7 @@ for model_name in model_names:
         # plt.ylim(bottom=0.5,top=1)
         plt.legend()
         b_acc = best_accuracy
-        plt.title(f'Accuracy\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},\nbest val acc: {np.round(b_acc,decimals=2)}, batch size: {batch_size}')
+        plt.title(f'Accuracy\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate}, dropout2D: {dropout2d_rate}\nbest val acc: {np.round(b_acc,decimals=2)}, batch size: {batch_size}')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
         plt.grid()
@@ -830,7 +836,7 @@ for model_name in model_names:
         plt.plot(x_axis,val_loss,'*-b',label='Validation')
         # plt.ylim(bottom=-0.5)
         plt.legend()
-        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate}, batch size: {batch_size}')
+        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, batch size: {batch_size}')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.grid()
