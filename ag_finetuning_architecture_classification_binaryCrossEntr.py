@@ -346,9 +346,7 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, 
             
             if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
                 for param in child.parameters():
-                    param.requires_grad = True 
-        # FINISCE QUI
-        
+                    param.requires_grad = True         
         
         
         model_copy = copy.deepcopy(model)
@@ -363,36 +361,45 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, 
             assert(t>=num_layers_to_train)
             
             if c > t - num_layers_to_train: #un-freeze all the following layers (conv2d & bn)
+                if model._get_name() == 'ResNet':
+                    if isinstance(child,nn.Conv2d) and splits[-1]=='conv1': #TODO conv1
                     
-                if isinstance(child,nn.Conv2d) and splits[-1]=='conv1': #TODO conv1
+                        c_dropout += 1
+                        
+                        # if c_dropout <= 3: #TODO i primi 3
+                        #     new_module = nn.Sequential(
+                        #             child,
+                        #             nn.Dropout2d(p=dropout_rate))
+        
+                        #     if len(splits)==1:
+                        #         setattr(model, name, new_module)
+                        #     elif len(splits)==3:
+                        #         setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)
+                        #     # #
+                        #     # elif len(splits)==4:
+                        #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
+                        
+                        if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                            # modificato 3 con 1 per aggiungere 1 solo layer di dropout
+                            new_module = nn.Sequential(
+                                    child,
+                                    nn.Dropout2d(p=dropout2d_rate))
+        
+                            if len(splits)==1:
+                                setattr(model, name, new_module)
+                            elif len(splits)==3:
+                                setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)      
+                elif model._get_name() == 'AlexNet':
+                   if isinstance(child,nn.Conv2d): #TODO conv1
                    
-                    c_dropout += 1
-                    
-                    # if c_dropout <= 3: #TODO i primi 3
-                    #     new_module = nn.Sequential(
-                    #             child,
-                    #             nn.Dropout2d(p=dropout_rate))
-    
-                    #     if len(splits)==1:
-                    #         setattr(model, name, new_module)
-                    #     elif len(splits)==3:
-                    #         setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)
-                    #     # #
-                    #     # elif len(splits)==4:
-                    #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
-                    
-                    if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
-                        # modificato 3 con 1 per aggiungere 1 solo layer di dropout
-                        new_module = nn.Sequential(
-                                child,
-                                nn.Dropout2d(p=dropout2d_rate))
-    
-                        if len(splits)==1:
-                            setattr(model, name, new_module)
-                        elif len(splits)==3:
-                            setattr(getattr(model,splits[0])[int(splits[1])], splits[2], new_module)      
-      
-                  
+                        c_dropout += 1
+                        
+                        if c_dropout > 5 - 3: # hardcode 5 e 1; TODO aggiunta dropout agli ultimi 1 layer (5 è il numero totale di conv2d)
+                            new_module = nn.Sequential(
+                                    child,
+                                    nn.Dropout2d(p=dropout_rate))
+                            setattr(model.features, splits[1], new_module)
+
         # ## Versione iniziale:
         # for param in model.parameters():
         #     param.requires_grad = False
@@ -533,7 +540,8 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ Resnet34
         """
         model_ft = models.resnet34(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, 
+                                    dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.fc.in_features
         model_ft.fc = nn.Sequential(
             nn.Dropout(p=dropout_rate),
@@ -658,7 +666,8 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         """ Alexnet
         """
         model_ft = models.alexnet(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, 
+                                    dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.classifier[6].in_features
         # model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
         model_ft.classifier[6] = nn.Sequential(
