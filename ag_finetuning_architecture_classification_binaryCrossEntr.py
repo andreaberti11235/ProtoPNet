@@ -26,6 +26,7 @@ from time import gmtime,strftime
 
 data_path = os.path.join(os.getcwd(),'datasets') #
 train_dir = os.path.join(data_path,'push_augmentor') #
+#test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
 test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
@@ -797,7 +798,9 @@ for model_name in model_names:
         
      
         joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
-        optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
+        #optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
+        #optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
+        optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
         # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
         
         # Setup the loss fxn
