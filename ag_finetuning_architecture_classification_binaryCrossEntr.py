@@ -380,7 +380,8 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, 
                         #     # elif len(splits)==4:
                         #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
                         
-                        if c_dropout > 9 - 2: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                        if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                        #if c_dropout > 9 - 2: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
                             # modificato 3 con 1 per aggiungere 1 solo layer di dropout; cambiato 1 con 2
                             new_module = nn.Sequential(
                                     child,
@@ -799,8 +800,8 @@ for model_name in model_names:
      
         joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
         #optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
-        #optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
-        optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
+        optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
+        #optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
         # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
         
         # Setup the loss fxn
