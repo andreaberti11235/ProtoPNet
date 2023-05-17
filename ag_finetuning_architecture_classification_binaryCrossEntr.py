@@ -380,8 +380,8 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, 
                         #     # elif len(splits)==4:
                         #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
                         
-                        if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
-                            # modificato 3 con 1 per aggiungere 1 solo layer di dropout
+                        if c_dropout > 9 - 2: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                            # modificato 3 con 1 per aggiungere 1 solo layer di dropout; cambiato 1 con 2
                             new_module = nn.Sequential(
                                     child,
                                     nn.Dropout2d(p=dropout2d_rate))
