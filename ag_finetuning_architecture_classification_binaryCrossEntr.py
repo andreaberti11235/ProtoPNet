@@ -47,7 +47,7 @@ num_epochs = 1000 #TODO
 
 parse = argparse.ArgumentParser(description="")
 
-parse.add_argument('model_name', help='Name of the baseline architecture: resnet18, resnet34, resnet50, vgg..',type=str)
+parse.add_argument('model_name', help='Name of the baseline architecture: alexnet, resnet18, resnet34, resnet50, vgg..',type=str)
 parse.add_argument('num_layers_to_train', help='Number of contigual conv2d layers to train beginning from the end of the model up',type=int)
 parse.add_argument('lr', help='Learning rate',type=float)
 parse.add_argument('wd', help='Weight decay',type=float)
@@ -56,6 +56,8 @@ parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers
 # parse.add_argument('num_dropouts',help='Number of dropout layers in the bottleneck of ResNet18, if 1 uses one, if 2 uses two.', type=int)
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt',type=str)
+parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1).')
+parse.add_argument('-o', '--optimiser', default='adam', type=str, help='Specify the name of the optimiser (default is adam). Possible options: adam, sgd, rms_prop.')
 parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model.', action='store_true')
 
 args = parse.parse_args()
@@ -70,6 +72,9 @@ dropout_rate = [args.dr]
 dropout2d_rate = [args.d2Dr]
 # num_dropouts = args.num_dropouts
 run_info_to_be_written = args.run_info
+
+num_d2d = args.num_dropout_2d
+optimiser = args.optimiser
 
 pretrained = args.pretrained
 #pretrained = True
@@ -380,7 +385,7 @@ def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, 
                         #     # elif len(splits)==4:
                         #     #     setattr(getattr(getattr(model,splits[0])[int(splits[1])],splits[2]), splits[3], new_module)
                         
-                        if c_dropout > 9 - 1: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
+                        if c_dropout > 9 - num_d2d: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
                         #if c_dropout > 9 - 2: # hardcode 9 e 3; TODO gli ultimi 3 (9 è il numero totale di conv1)
                             # modificato 3 con 1 per aggiungere 1 solo layer di dropout; cambiato 1 con 2
                             new_module = nn.Sequential(
@@ -799,9 +804,12 @@ for model_name in model_names:
         
      
         joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
-        #optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
-        optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
-        #optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
+        if optimiser == 'adam':
+            optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
+        elif optimiser == 'sgd':
+            optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
+        elif optimiser == 'rms_prop':
+            optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
         # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
         
         # Setup the loss fxn
@@ -849,7 +857,7 @@ for model_name in model_names:
         plt.plot(x_axis,val_loss,'*-b',label='Validation')
         # plt.ylim(bottom=-0.5)
         plt.legend()
-        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, batch size: {batch_size}')
+        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, n_dropout2D: {num_d2d}, batch size: {batch_size}, optimiser: {optimiser}')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.grid()
