@@ -857,7 +857,7 @@ for model_name in model_names:
         plt.plot(x_axis,val_loss,'*-b',label='Validation')
         # plt.ylim(bottom=-0.5)
         plt.legend()
-        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, n_dropout2D: {num_d2d}, batch size: {batch_size}, optimiser: {optimiser}')
+        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, n_dropout2D: {num_d2d}\nbatch size: {batch_size}, optimiser: {optimiser}')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.grid()
