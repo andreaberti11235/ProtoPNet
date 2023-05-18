@@ -68,6 +68,7 @@ model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers
 
 joint_lr_step_size = 10
 gamma_value = 0.5
+factor = 0.5
 
 lr = [args.lr]
 wd = [args.wd]
@@ -158,6 +159,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     early_stop_acc = 0.0
+    val_acc = 0 
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -229,6 +231,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 torch.save(obj=model, f=os.path.join(output_dir,('epoch_{}_acc_{:.4f}.pth').format(epoch, best_acc)))
                 
             if phase == 'val':
+                val_acc = epoch_acc
                 val_acc_history.append(epoch_acc)
                 val_loss.append(epoch_loss)
                 
@@ -271,7 +274,9 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             if phase == 'train':
                 train_acc_history.append(epoch_acc)
                 train_loss.append(epoch_loss)
-                joint_lr_scheduler.step()
+                # joint_lr_scheduler.step()
+                joint_lr_scheduler.step(val_acc)
+
         if to_be_stopped:
             break
         
@@ -813,8 +818,9 @@ for model_name in model_names:
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
             optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
-        joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
-        
+        # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
+        joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
+
         # Setup the loss fxn
         criterion = nn.BCELoss()
         
