@@ -66,6 +66,9 @@ num_layers_to_train = args.num_layers_to_train
 actual_model_name = args.model_name
 model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers_{img_size}_imgsize']#TODO clahe?
 
+joint_lr_step_size = 10
+gamma_value = 0.5
+
 lr = [args.lr]
 wd = [args.wd]
 dropout_rate = [args.dr]
@@ -268,7 +271,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             if phase == 'train':
                 train_acc_history.append(epoch_acc)
                 train_loss.append(epoch_loss)
-                # joint_lr_scheduler.step()
+                joint_lr_scheduler.step()
         if to_be_stopped:
             break
         
@@ -810,7 +813,7 @@ for model_name in model_names:
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
             optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
-        # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
+        joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
         
         # Setup the loss fxn
         criterion = nn.BCELoss()
