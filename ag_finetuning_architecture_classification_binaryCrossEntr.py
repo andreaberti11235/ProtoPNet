@@ -58,6 +58,7 @@ parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt',type=str)
 parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1).')
 parse.add_argument('-o', '--optimiser', default='adam', type=str, help='Specify the name of the optimiser (default is adam). Possible options: adam, sgd, rms_prop.')
+parse.add_argument('-sch', '--scheduler', type=str, help='If added, use the specified LR scheduler during training phase. Possible options: ReduceLROnPlateau, StepLR')
 parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model.', action='store_true')
 
 args = parse.parse_args()
@@ -79,6 +80,7 @@ run_info_to_be_written = args.run_info
 
 num_d2d = args.num_dropout_2d
 optimiser = args.optimiser
+scheduler_name = args.scheduler
 
 pretrained = args.pretrained
 #pretrained = True
@@ -146,7 +148,7 @@ def get_N_HyperparamsConfigs(N=0, lr=lr, wd=wd, dropout_rate=dropout_rate, dropo
     return [configurations[x] for x in chosen_configs]
 
 
-def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_inception=False, window=20, patience=3):
+def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, num_epochs=25, is_inception=False, window=20, patience=3):
     since = time.time()
     val_acc_history = []
     train_acc_history = []
@@ -160,7 +162,7 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
     best_acc = 0.0
     early_stop_acc = 0.0
     val_acc = 0 
-
+    print(f'Scheduler name: {scheduler_name}')
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
@@ -274,8 +276,10 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             if phase == 'train':
                 train_acc_history.append(epoch_acc)
                 train_loss.append(epoch_loss)
-                # joint_lr_scheduler.step()
-                joint_lr_scheduler.step(val_acc)
+                if scheduler_name == 'StepLR':
+                    joint_lr_scheduler.step()
+                elif scheduler_name == 'ReduceLROnPlateau':
+                    joint_lr_scheduler.step(val_acc)
 
         if to_be_stopped:
             break
@@ -818,14 +822,16 @@ for model_name in model_names:
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
             optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
-        # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
-        joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
+        if scheduler_name == 'StepLR':
+            joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
+        elif scheduler_name == 'ReduceLROnPlateau':
+            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
 
         # Setup the loss fxn
         criterion = nn.BCELoss()
         
         # Train and evaluate
-        model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
+        model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, scheduler_name, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
         
         #
         
