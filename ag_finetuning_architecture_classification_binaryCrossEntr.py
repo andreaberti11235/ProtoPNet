@@ -47,19 +47,19 @@ num_epochs = 1000 #TODO
 
 parse = argparse.ArgumentParser(description="")
 
-parse.add_argument('model_name', help='Name of the baseline architecture: alexnet, resnet18, resnet34, resnet50, vgg..',type=str)
-parse.add_argument('num_layers_to_train', help='Number of contigual conv2d layers to train beginning from the end of the model up',type=int)
-parse.add_argument('lr', help='Learning rate',type=float)
-parse.add_argument('wd', help='Weight decay',type=float)
-parse.add_argument('dr', help='Dropout rate to be added after fully connected layers',type=float)
-parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers',type=float)
+parse.add_argument('model_name', help='Name of the baseline architecture', choices=['alexnet', 'resnet18', 'resnet34', 'resnet50', 'vgg'], type=str)
+parse.add_argument('num_layers_to_train', help='Number of contigual conv2d layers to train beginning from the end of the model up', type=int)
+parse.add_argument('lr', help='Learning rate', type=float)
+parse.add_argument('wd', help='Weight decay', type=float)
+parse.add_argument('dr', help='Dropout rate to be added after fully connected layers', type=float)
+parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers', type=float)
 # parse.add_argument('num_dropouts',help='Number of dropout layers in the bottleneck of ResNet18, if 1 uses one, if 2 uses two.', type=int)
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
-parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt',type=str)
-parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1).')
-parse.add_argument('-o', '--optimiser', default='adam', type=str, help='Specify the name of the optimiser (default is adam). Possible options: adam, sgd, rms_prop.')
-parse.add_argument('-sch', '--scheduler', type=str, help='If added, use the specified LR scheduler during training phase. Possible options: ReduceLROnPlateau, StepLR')
-parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model.', action='store_true')
+parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt', type=str)
+parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1)')
+parse.add_argument('-o', '--optimiser', default='adam', type=str, choices=['adam', 'sgd', 'rms_prop'], help='Specify the name of the optimiser (default is adam)')
+parse.add_argument('-sch', '--scheduler', type=str, choices=['ReduceLROnPlateau', 'StepLR'],help='If added, use the specified LR scheduler during training phase')
+parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model', action='store_true')
 
 args = parse.parse_args()
 
