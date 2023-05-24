@@ -10,6 +10,7 @@ versione fine tuning
 """
 from __future__ import print_function
 from __future__ import division
+from adabelief_pytorch import AdaBelief
 import torch
 import torch.nn as nn
 import numpy as np
@@ -57,8 +58,8 @@ parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt', type=str)
 parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1)')
-parse.add_argument('-o', '--optimiser', default='adam', type=str, choices=['adam', 'sgd', 'rms_prop'], help='Specify the name of the optimiser (default is adam)')
-parse.add_argument('-sch', '--scheduler', type=str, choices=['ReduceLROnPlateau', 'StepLR'],help='If added, use the specified LR scheduler during training phase')
+parse.add_argument('-o', '--optimiser', default='adam', type=str, choices=['adam', 'AdaBelief', 'rms_prop', 'sgd'], help='Specify the name of the optimiser (default is adam)')
+parse.add_argument('-sch', '--scheduler', type=str, choices=['ReduceLROnPlateau', 'StepLR'], help='If added, use the specified LR scheduler during training phase')
 parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model', action='store_true')
 
 args = parse.parse_args()
@@ -818,6 +819,8 @@ for model_name in model_names:
         joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
         if optimiser == 'adam':
             optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
+        elif optimiser == 'AdaBelief':
+            optimizer = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple = False, rectify = False)
         elif optimiser == 'sgd':
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
