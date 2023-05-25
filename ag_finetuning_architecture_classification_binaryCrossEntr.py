@@ -821,7 +821,7 @@ for model_name in model_names:
         if optimiser == 'adam':
             optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
         elif optimiser == 'AdaBelief':
-            optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple = False, rectify = False)
+            optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple = True, rectify = False)
         elif optimiser == 'sgd':
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
