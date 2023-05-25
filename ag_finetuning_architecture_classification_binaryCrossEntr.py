@@ -68,7 +68,7 @@ num_layers_to_train = args.num_layers_to_train
 actual_model_name = args.model_name
 model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers_{img_size}_imgsize']#TODO clahe?
 
-joint_lr_step_size = 10
+joint_lr_step_size = 15
 gamma_value = 0.5
 factor = 0.5
 
