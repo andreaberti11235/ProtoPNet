@@ -827,7 +827,7 @@ for model_name in model_names:
         elif optimiser == 'rms_prop':
             optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
         if scheduler_name == 'StepLR':
-            joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
+            joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
         elif scheduler_name == 'ReduceLROnPlateau':
             joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
 
