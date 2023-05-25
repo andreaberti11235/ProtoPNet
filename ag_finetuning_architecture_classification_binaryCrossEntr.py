@@ -77,6 +77,7 @@ wd = [args.wd]
 dropout_rate = [args.dr]
 dropout2d_rate = [args.d2Dr]
 # num_dropouts = args.num_dropouts
+num_dropouts = 2
 run_info_to_be_written = args.run_info
 
 num_d2d = args.num_dropout_2d
@@ -441,36 +442,36 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.fc.in_features
         
-        ##Version 1
-        model_ft.fc = nn.Sequential( # replace the original fully connected
-            nn.Dropout(p=dropout_rate), #TODO added some dropout
-            nn.Linear(num_ftrs, num_classes),
-            nn.Sigmoid()
-            )
+        # ##Version 1
+        # model_ft.fc = nn.Sequential( # replace the original fully connected
+        #     nn.Dropout(p=dropout_rate), #TODO added some dropout
+        #     nn.Linear(num_ftrs, num_classes),
+        #     nn.Sigmoid()
+        #     )
         
-        # ##Version 2
-        # #TODO added bottleneck-layers and some dropout 
-        # if num_dropouts==1:
-        #     model_ft.fc = nn.Sequential(
+        ##Version 2
+        #TODO added bottleneck-layers and some dropout 
+        if num_dropouts==1:
+            model_ft.fc = nn.Sequential(
                 
-        #         nn.Linear(num_ftrs,64), #512>64
-        #         nn.ReLU(),
+                nn.Linear(num_ftrs,64), #512>64
+                nn.ReLU(),
                 
-        #         nn.Dropout(p=dropout_rate),                 
-        #         nn.Linear(64, num_classes),
-        #         nn.Sigmoid()
-        #         )
-        # elif num_dropouts==2:
-        #     model_ft.fc = nn.Sequential(
+                nn.Dropout(p=dropout_rate),                 
+                nn.Linear(64, num_classes),
+                nn.Sigmoid()
+                )
+        elif num_dropouts==2:
+            model_ft.fc = nn.Sequential(
                 
-        #         nn.Dropout(p=dropout_rate),                
-        #         nn.Linear(num_ftrs,64), #512>64
-        #         nn.ReLU(),
+                nn.Dropout(p=dropout_rate),                
+                nn.Linear(num_ftrs,64), #512>64
+                nn.ReLU(),
                 
-        #         nn.Dropout(p=dropout_rate),                 
-        #         nn.Linear(64, num_classes),                
-        #         nn.Sigmoid()
-        #         )
+                nn.Dropout(p=dropout_rate),                 
+                nn.Linear(64, num_classes),                
+                nn.Sigmoid()
+                )
         
         
         
