@@ -71,6 +71,8 @@ model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers
 joint_lr_step_size = 15
 gamma_value = 0.1
 factor = 0.5
+threshold = 1e-2
+patience = 5
 
 lr = [args.lr]
 wd = [args.wd]
@@ -829,7 +831,9 @@ for model_name in model_names:
         if scheduler_name == 'StepLR':
             joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
         elif scheduler_name == 'ReduceLROnPlateau':
-            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
+            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
+            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience, threshold=threshold, verbose=True)
+
 
         # Setup the loss fxn
         criterion = nn.BCELoss()
