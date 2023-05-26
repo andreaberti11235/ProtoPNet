@@ -69,7 +69,7 @@ actual_model_name = args.model_name
 model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers_{img_size}_imgsize']#TODO clahe?
 
 joint_lr_step_size = 15
-gamma_value = 0.5
+gamma_value = 0.1
 factor = 0.5
 
 lr = [args.lr]
@@ -821,7 +821,7 @@ for model_name in model_names:
         if optimiser == 'adam':
             optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
         elif optimiser == 'AdaBelief':
-            optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple = True, rectify = False)
+            optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple=False, rectify=False)
         elif optimiser == 'sgd':
             optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
         elif optimiser == 'rms_prop':
