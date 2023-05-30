@@ -239,6 +239,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
             if phase == 'val':
                 val_acc = epoch_acc
                 val_acc_history.append(epoch_acc)
+                val_loss_item = epoch_loss
                 val_loss.append(epoch_loss)
                 
                 ## EARLY STOPPING
@@ -284,7 +285,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
                     joint_lr_scheduler.step()
                 elif scheduler_name == 'ReduceLROnPlateau':
                     # joint_lr_scheduler.step(val_acc)
-                    joint_lr_scheduler.step(val_loss[-1])
+                    joint_lr_scheduler.step(val_loss_item)
 
         if to_be_stopped:
             break
