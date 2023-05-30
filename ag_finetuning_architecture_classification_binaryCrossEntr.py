@@ -283,7 +283,8 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
                 if scheduler_name == 'StepLR':
                     joint_lr_scheduler.step()
                 elif scheduler_name == 'ReduceLROnPlateau':
-                    joint_lr_scheduler.step(val_acc)
+                    # joint_lr_scheduler.step(val_acc)
+                    joint_lr_scheduler.step(val_loss[-1])
 
         if to_be_stopped:
             break
@@ -831,8 +832,9 @@ for model_name in model_names:
         if scheduler_name == 'StepLR':
             joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
         elif scheduler_name == 'ReduceLROnPlateau':
+            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=joint_lr_step_size, verbose=True)
             # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
-            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience, threshold=threshold, verbose=True)
+            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience, threshold=threshold, verbose=True)
 
 
         # Setup the loss fxn
