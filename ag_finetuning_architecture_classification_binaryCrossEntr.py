@@ -93,7 +93,8 @@ pretrained = args.pretrained
 # wd = [1e-3] #[5e-3]
 # dropout_rate = [0.5]
 
-batch_size = [10] #TODO 
+#batch_size = [10] #TODO 
+batch_size = [64] #TODO 
 batch_size_valid = 2
 # joint_lr_step_size = [2, 5, 10]
 # gamma_value = [0.10, 0.50, 0.25]
