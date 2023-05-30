@@ -166,6 +166,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
     best_acc = 0.0
     early_stop_acc = 0.0
     val_acc = 0 
+    val_loss_item = 1
     print(f'Scheduler name: {scheduler_name}')
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
