@@ -72,7 +72,7 @@ joint_lr_step_size = 15
 gamma_value = 0.5
 factor = 0.5
 threshold = 1e-2
-patience = 5
+patience_lr = 5
 
 lr = [args.lr]
 wd = [args.wd]
@@ -93,8 +93,8 @@ pretrained = args.pretrained
 # wd = [1e-3] #[5e-3]
 # dropout_rate = [0.5]
 
-#batch_size = [10] #TODO 
-batch_size = [64] #TODO 
+batch_size = [10] #TODO 
+#batch_size = [32] #TODO 
 batch_size_valid = 2
 # joint_lr_step_size = [2, 5, 10]
 # gamma_value = [0.10, 0.50, 0.25]
@@ -835,9 +835,9 @@ for model_name in model_names:
         if scheduler_name == 'StepLR':
             joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
         elif scheduler_name == 'ReduceLROnPlateau':
-            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=patience, verbose=True)
+            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=patience_lr, verbose=True)
             # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
-            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience, threshold=threshold, verbose=True)
+            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience_lr, threshold=threshold, verbose=True)
 
 
         # Setup the loss fxn
