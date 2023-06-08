@@ -13,7 +13,10 @@ from __future__ import division
 from adabelief_pytorch import AdaBelief
 import torch
 import torch.nn as nn
+import torch.utils.data
+from torch.utils.data import SubsetRandomSampler
 import numpy as np
+import pandas as pd
 from torchvision import datasets, models, transforms
 from torch.nn.parallel import DistributedDataParallel as ddp 
 import matplotlib.pyplot as plt
@@ -23,12 +26,16 @@ import copy
 import argparse
 from tqdm import tqdm
 from time import gmtime,strftime
-
+from stratified_group_data_splitting import StratifiedGroupKFold
 
 data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmentor') #
-#test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
-test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
+# train_dir = os.path.join(data_path,'push_augmentor') #
+# #test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
+# test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
+original_dir = os.path.join(data_path, 'push_e_valid') # dir containing the push and valid data to be then split
+augm_dir = os.path.join(data_path, 'push_e_valid_augm') # dir containing the augmented versions of push and valid data to be then split
+path_to_csv_original = os.path.join(data_path, 'push_e_valid_original.csv') # csv of original files with patient_id column
+path_to_csv_augmented = os.path.join(data_path, 'push_e_valid_augm.csv') # csv of augmented files with patient_id column
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
@@ -74,6 +81,15 @@ factor = 0.5
 threshold = 1e-2
 patience_lr = 5
 
+# parametri da variare in grid/random search:
+# lr intorno a 5e-5 [1e-5, 5e-5, 1e-4]
+# wd intorno a 0.2 [0.1, 0.2, 0.3]
+# valore dropout 2D [0.2, 0.3, 0.4]
+# numero dropout 2D no lasciamone 1
+# joint_lr_step_size intorno a 15 [10, 15, 20]
+# gamma_value 0.1 e 0.5 [0.1, 0.5]
+# batch size da decidere, prima provare a vedere cosa esce con 16 rispetto a 10
+
 lr = [args.lr]
 wd = [args.wd]
 dropout_rate = [args.dr]
@@ -93,7 +109,7 @@ pretrained = args.pretrained
 # wd = [1e-3] #[5e-3]
 # dropout_rate = [0.5]
 
-batch_size = [10] #TODO 
+batch_size = [16] #TODO 
 #batch_size = [32] #TODO 
 batch_size_valid = 2
 # joint_lr_step_size = [2, 5, 10]
@@ -300,11 +316,13 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
     print('Best val Acc: {:4f}'.format(best_acc))
 
     # load best model weights
-    if to_be_stopped==False: #the case when EarlyStop never occurs
-        model.load_state_dict(best_model_wts)
-    else:
-        model.load_state_dict(model_wts_earlyStopped)
-        best_acc = early_stop_acc
+    # if to_be_stopped==False: #the case when EarlyStop never occurs
+    #     model.load_state_dict(best_model_wts)
+    # else:
+    #     model.load_state_dict(model_wts_earlyStopped)
+    #     best_acc = early_stop_acc
+
+    model.load_state_dict(best_model_wts)
 
     return model, val_acc_history, train_acc_history, val_loss, train_loss, best_acc
 
@@ -748,42 +766,35 @@ for model_name in model_names:
              f_out.write(run_info_to_be_written)
         
         
+        # reading csv files to get original and augmented images
+        df_original = pd.read_csv(path_to_csv_original, sep=',', index_col='file_name')
+        df_augmented = pd.read_csv(path_to_csv_augmented, sep=',', index_col='file_name')
         
         # all datasets
         normalize = transforms.Normalize(mean=mean,
                                          std=std)
-        # train set
-        train_dataset = datasets.ImageFolder(
-            train_dir,
+        # dataset of original (only slice augmentation) images 
+        img_original_dataset = datasets.ImageFolder(
+            original_dir,
             transforms.Compose([
                 transforms.Grayscale(num_output_channels=3),
                 transforms.Resize(size=(img_size, img_size)),
                 transforms.ToTensor(),
                 normalize,
             ]))
-        train_loader = torch.utils.data.DataLoader(
-            train_dataset, batch_size=train_batch_size, shuffle=True,
-            num_workers=workers, pin_memory=False)
 
-        # test set
-        test_dataset = datasets.ImageFolder(
-            test_dir,
+
+        # dataset of augmented (augmentor) images 
+        img_augmented_dataset = datasets.ImageFolder(
+            augm_dir,
             transforms.Compose([
                 transforms.Grayscale(num_output_channels=3),
                 transforms.Resize(size=(img_size, img_size)),
                 transforms.ToTensor(),
                 normalize,
             ]))
-        test_loader = torch.utils.data.DataLoader(
-            test_dataset, batch_size=test_batch_size, shuffle=True,#False
-            num_workers=workers, pin_memory=False)
 
-        # Create training and validation dataloaders
-        dataloaders_dict = {
-            'train': train_loader,
-            'val': test_loader    
-            }
-        
+
         
         # Flag for feature extracting. When False, we finetune the whole model,
         #   when True we only update the reshaped layer params
@@ -791,108 +802,234 @@ for model_name in model_names:
         
         
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        
-        #print(f'model_name={model_name[:9]}')
-        # Initialize the model for this run
-        # model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True)
-        model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, 
-                                                dropout_rate, num_layers_to_train, dropout2d_rate=dropout2d_rate, use_pretrained=pretrained)
 
         with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
             f_out.write(f'{model_ft}')
+        
+        ################
+        # start k-fold #
+        ################
+        
+        # Separate train and valid_augmented
+        X = np.array(df_augmented.index) # is an array of names
+        group = np.array(df_augmented['patient_id'])
+        y = np.array(df_augmented['label'])
+        
+        y = np.array([0 if elem=='benign' else 1 for elem in y]) #TODO modificare con la stringa opportuna
+        
+        
+        y_original = np.array(df_original['label'])
+        y_original = np.array([0 if elem=='benign' else 1 for elem in y_original]) #TODO modificare con la stringa opportuna
+
+        # create the dictionary containing dict = {'img_name': 'img_index'} for the dataset
+        dict_augmented = {key[0]:value for value, key in enumerate(img_augmented_dataset.imgs)}
+        dict_original = {key[0]:value for value, key in enumerate(img_original_dataset.imgs)}
+        
+        best_val_accuracy_folds = []
+   
+        k = 5
+        x = StratifiedGroupKFold(n_splits=k, shuffle=True, random_state=42) #reproducibility, 5-fold
+        for fold, (train_idx, valid_augm_idx) in enumerate(x.split(X,y,groups=group)):
+            
+            output_dir_fold = os.path.join(output_dir, f'fold{fold}')
+                    
+            if not os.path.exists(output_dir_fold):
+                os.makedirs(output_dir_fold)
+
+            print(f'Proporzione di maligni su totale TRAIN: {np.sum(y[train_idx])/len(y[train_idx])}')
+            print(f'Proporzione di maligni su totale VALID_AUGM: {np.sum(y[valid_augm_idx])/len(y[valid_augm_idx])}')
+
+            start_fold = time.time()
  
-        # Send the model to GPU
-        model_ft = model_ft.to(device)
-        
-        #TODO MULTI GPU MODEL
-        model_ft = torch.nn.DataParallel(model_ft)
-        # model_ft = ddp(model_ft)
-
-        
-        params_to_update = model_ft.parameters()
-        print("Params to learn:")
-        if feature_extract:
-            params_to_update = []
-            for name,param in model_ft.named_parameters():
-                if param.requires_grad == True:
-                    params_to_update.append(param)
-                    print("\t",name)
-        else:
-            for name,param in model_ft.named_parameters():
-                if param.requires_grad == True:
-                    print("\t",name)
-        
-     
-        joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
-        if optimiser == 'adam':
-            optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
-        elif optimiser == 'AdaBelief':
-            optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple=False, rectify=False)
-        elif optimiser == 'sgd':
-            optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
-        elif optimiser == 'rms_prop':
-            optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
-        if scheduler_name == 'StepLR':
-            joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
-        elif scheduler_name == 'ReduceLROnPlateau':
-            joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=patience_lr, verbose=True)
-            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
-            # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience_lr, threshold=threshold, verbose=True)
+            #print(f'model_name={model_name[:9]}')
+            # Initialize the model for this run
+            # model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, dropout_rate, num_dropouts, num_layers_to_train, use_pretrained=True)
+            model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, 
+                                                    dropout_rate, num_layers_to_train, dropout2d_rate=dropout2d_rate, use_pretrained=pretrained)
 
 
-        # Setup the loss fxn
-        criterion = nn.BCELoss()
-        
-        # Train and evaluate
-        model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, scheduler_name, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
-        
-        #
-        
-        num_dropouts=999 #fake number to exclude num_dropouts in further experiments...
-        if not os.path.exists(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt'):
-            with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'w') as out_file:
-                out_file.write('{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+    
+            # Send the model to GPU
+            model_ft = model_ft.to(device)
+            
+            #TODO MULTI GPU MODEL
+            model_ft = torch.nn.DataParallel(model_ft)
+            # model_ft = ddp(model_ft)
 
-        with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'a') as out_file: #TODO ricordati di cambiare il nome del txt se cambia esperimento
-            out_file.write(f'{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+            # converting names in indexes
+            train_idx = [dict_augmented[X[index]] for index in train_idx]
+            
+            train_sampler = SubsetRandomSampler(train_idx)
+            train_loader = torch.utils.data.DataLoader(img_augmented_dataset,
+                                                       batch_size=train_batch_size,
+                                                       #shuffle=True,
+                                                       num_workers=workers,
+                                                       pin_memory=False,
+                                                       sampler=train_sampler)
+            
 
+            # get the names of the non-augmented images to create the push and valid datasets
+            sep = 'png'
+            
+            # name_prefixes_push = [f'{X[index].split(sep=sep)[0]}png' for index in train_idx]
+            original_prefix = list(dict_original.keys())[0]
+            original_prefix = original_prefix.split(os.sep)
+            original_prefix = os.path.join(*original_prefix[:-2])
+            # name_prefixes_push = []
+            # for index in train_idx:
+            #     img_augm_prefix = f'{X[index].split(sep=sep)[0]}png'
+            #     img_augm_prefix = img_augm_prefix.split(os.sep)
+            #     tail = img_augm_prefix[-1]
+            #     tail_splits = tail.split(sep='DBT-P')
+            #     img_augm_prefix[-1] = f'DBT-P{tail_splits[-1]}'
+            #     img_augm_prefix = os.path.join(*img_augm_prefix[-2:])
+            #     img_augm_prefix = os.path.join(original_prefix, img_augm_prefix)
+            #     name_prefixes_push.append(img_augm_prefix)
+            # push_names = list(set(name_prefixes_push))
+         
+            name_prefixes_valid = []
+            for index in valid_augm_idx:
+                img_augm_prefix = f'{X[index].split(sep=sep)[0]}png'
+                img_augm_prefix = img_augm_prefix.split(os.sep)
+                tail = img_augm_prefix[-1]
+                tail_splits = tail.split(sep='DBT-P')
+                img_augm_prefix[-1] = f'DBT-P{tail_splits[-1]}'
+                img_augm_prefix = os.path.join(*img_augm_prefix[-2:])
+                img_augm_prefix = os.path.join(original_prefix, img_augm_prefix)
+                name_prefixes_valid.append(img_augm_prefix)
+            valid_names = list(set(name_prefixes_valid))
+
+            print(f'Valid names: {valid_names[:5]}')
+
+            # push_idx = [dict_original[name] for name in push_names]
+            valid_idx = [dict_original[name] for name in valid_names]
+            
+            print(f'Valid idx: {valid_idx[:5]}')
+
+            # using those indexes, create the push and valid dataloader
+            # push_sampler = SubsetRandomSampler(push_idx)
+            # train_push_loader = torch.utils.data.DataLoader(img_original_dataset_push,
+            #                                                 batch_size=train_push_batch_size,
+            #                                                 shuffle=False,
+            #                                                 num_workers=workers,
+            #                                                 pin_memory=False,
+            #                                                 sampler=push_sampler)
+           
+            valid_sampler = SubsetRandomSampler(valid_idx)
+            test_loader = torch.utils.data.DataLoader(img_original_dataset,
+                                                             batch_size=test_batch_size,
+                                                             #shuffle=True, #TODO messo True, era falso
+                                                             num_workers=workers,
+                                                             pin_memory=False,
+                                                             sampler=valid_sampler)  
+
+            # Create training and validation dataloaders
+            dataloaders_dict = {
+                'train': train_loader,
+                'val': test_loader    
+                }
+            
+            
+            params_to_update = model_ft.parameters()
+            print("Params to learn:")
+            if feature_extract:
+                params_to_update = []
+                for name,param in model_ft.named_parameters():
+                    if param.requires_grad == True:
+                        params_to_update.append(param)
+                        print("\t",name)
+            else:
+                for name,param in model_ft.named_parameters():
+                    if param.requires_grad == True:
+                        print("\t",name)
+            
         
+            joint_optimizer_specs = [{'params': params_to_update, 'lr': lr, 'weight_decay': wd}]# bias are now also being regularized
+            if optimiser == 'adam':
+                optimizer_ft = torch.optim.Adam(joint_optimizer_specs)
+            elif optimiser == 'AdaBelief':
+                optimizer_ft = AdaBelief(params_to_update, lr=lr, eps=1e-8, betas=(0.9,0.999), weight_decouple=False, rectify=False)
+            elif optimiser == 'sgd':
+                optimizer_ft = torch.optim.SGD(joint_optimizer_specs)
+            elif optimiser == 'rms_prop':
+                optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
+            if scheduler_name == 'StepLR':
+                joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
+            elif scheduler_name == 'ReduceLROnPlateau':
+                joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=patience_lr, verbose=True)
+                # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
+                # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=patience_lr, threshold=threshold, verbose=True)
+
+
+            # Setup the loss fxn
+            criterion = nn.BCELoss()
+            
+
+            # Train and evaluate
+            model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, scheduler_name, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
+            
+            best_val_accuracy_folds.append(best_accuracy)
+
+
+            #
+            
+            num_dropouts=999 #fake number to exclude num_dropouts in further experiments...
+            if not os.path.exists(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt'):
+                with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'w') as out_file:
+                    out_file.write('{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+
+            with open(f'./saved_models_baseline/{model_name}/experiments_setup_massBenignMalignant.txt', 'a') as out_file: #TODO ricordati di cambiare il nome del txt se cambia esperimento
+                out_file.write(f'{experiment_run},{num_layers_to_train},{lr},{wd},{dropout_rate},{dropout2d_rate},{num_dropouts},{batch_size},{best_accuracy}\n')
+
+            
+            
+            
+            # Plots
+            val_accs_npy = val_accs
+            train_accs_npy = train_accs
+            x_axis = range(0,len(val_accs_npy))
+            plt.figure()
+            plt.plot(x_axis,train_accs_npy,'*-k',label='Training')
+            plt.plot(x_axis,val_accs_npy,'*-b',label='Validation')
+            # plt.ylim(bottom=0.5,top=1)
+            plt.legend()
+            b_acc = best_accuracy
+            plt.title(f'Accuracy\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate}, dropout2D: {dropout2d_rate}\nbest val acc: {np.round(b_acc,decimals=2)}, batch size: {batch_size}')
+            plt.xlabel('Epochs')
+            plt.ylabel('Accuracy')
+            plt.grid()
+            plt.savefig(os.path.join(output_dir_fold,experiment_run+'_acc.pdf'))
+            
+            
+            
+            # val_loss_npy = [elem.detach().cpu() for elem in val_loss]
+            # train_loss_npy = [elem.detach().cpu() for elem in train_loss]
+            x_axis = range(0,len(val_loss))
+            plt.figure()
+            plt.plot(x_axis,train_loss,'*-k',label='Training')
+            plt.plot(x_axis,val_loss,'*-b',label='Validation')
+            # plt.ylim(bottom=-0.5)
+            plt.legend()
+            plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, n_dropout2D: {num_d2d}\nbatch size: {batch_size}, optimiser: {optimiser}')
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss')
+            plt.grid()
+            plt.savefig(os.path.join(output_dir_fold,experiment_run+'_loss.pdf'))
+            
+            # with open(os.path.join(output_dir,experiment_run+'_accuracies.txt'),'w') as f_out:
+            #           f_out.write(train_accs_npy+'\n'+val_accs_npy)
+            print(f'End of config {idx}: {config}')
         
-        
-        # Plots
-        val_accs_npy = val_accs
-        train_accs_npy = train_accs
-        x_axis = range(0,len(val_accs_npy))
-        plt.figure()
-        plt.plot(x_axis,train_accs_npy,'*-k',label='Training')
-        plt.plot(x_axis,val_accs_npy,'*-b',label='Validation')
-        # plt.ylim(bottom=0.5,top=1)
-        plt.legend()
-        b_acc = best_accuracy
-        plt.title(f'Accuracy\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate}, dropout2D: {dropout2d_rate}\nbest val acc: {np.round(b_acc,decimals=2)}, batch size: {batch_size}')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.grid()
-        plt.savefig(os.path.join(output_dir,experiment_run+'_acc.pdf'))
-        
-        
-        
-        # val_loss_npy = [elem.detach().cpu() for elem in val_loss]
-        # train_loss_npy = [elem.detach().cpu() for elem in train_loss]
-        x_axis = range(0,len(val_loss))
-        plt.figure()
-        plt.plot(x_axis,train_loss,'*-k',label='Training')
-        plt.plot(x_axis,val_loss,'*-b',label='Validation')
-        # plt.ylim(bottom=-0.5)
-        plt.legend()
-        plt.title(f'Loss\n{actual_model_name}; BCE Loss; last {num_layers_to_train} conv layers trained\nLR: {lr}, WD: {wd}, dropout: {dropout_rate},  dropout2D: {dropout2d_rate}, n_dropout2D: {num_d2d}\nbatch size: {batch_size}, optimiser: {optimiser}')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.grid()
-        plt.savefig(os.path.join(output_dir,experiment_run+'_loss.pdf'))
-        
-        # with open(os.path.join(output_dir,experiment_run+'_accuracies.txt'),'w') as f_out:
-        #           f_out.write(train_accs_npy+'\n'+val_accs_npy)
-        print(f'End of config {idx}: {config}')
+        best_val_accuracy_folds_npy = np.array(best_val_accuracy_folds)
+        mean_val_accuracy_configuration = np.mean(best_val_accuracy_folds_npy)
+        std_val_accuracy_configuration = np.std(best_val_accuracy_folds_npy)
+        with open(os.path.join(output_dir,'configuratrion_params.txt'),'a') as fout:
+            fout.write('\n')
+            fout.write(f'mean_val_acc={mean_val_accuracy_configuration}\n')
+            fout.write(f'std_val_acc={std_val_accuracy_configuration}\n')
+            fout.write(f'Folds_val_accu={best_val_accuracy_folds_npy}\n')
+        np.save(os.path.join(output_dir, 'mean_val_accuracy.npy'), mean_val_accuracy_configuration)
+        np.save(os.path.join(output_dir, 'std_val_accuracy.npy'), std_val_accuracy_configuration)
+
 
 print('All experiments saved!')
