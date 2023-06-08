@@ -875,6 +875,7 @@ for model_name in model_names:
             original_prefix = list(dict_original.keys())[0]
             original_prefix = original_prefix.split(os.sep)
             original_prefix = os.path.join(*original_prefix[:-2])
+            original_prefix = os.path.join('/', original_prefix) # TODO!!! aggiunto perchè sul cdc di Pisa ho dovuto mettere i path assoluti invece di ./
             # name_prefixes_push = []
             # for index in train_idx:
             #     img_augm_prefix = f'{X[index].split(sep=sep)[0]}png'
