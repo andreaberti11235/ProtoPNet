@@ -803,8 +803,6 @@ for model_name in model_names:
         
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
-            f_out.write(f'{model_ft}')
         
         ################
         # start k-fold #
@@ -847,7 +845,9 @@ for model_name in model_names:
             model_ft, input_size = initialize_model(actual_model_name, num_classes, feature_extract, 
                                                     dropout_rate, num_layers_to_train, dropout2d_rate=dropout2d_rate, use_pretrained=pretrained)
 
-
+            if fold == 0:
+                with open(os.path.join(output_dir,'model_architecture.txt'),'w') as f_out:
+                    f_out.write(f'{model_ft}')
     
             # Send the model to GPU
             model_ft = model_ft.to(device)
