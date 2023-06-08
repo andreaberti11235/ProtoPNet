@@ -32,10 +32,10 @@ data_path = os.path.join(os.getcwd(),'datasets') #
 # train_dir = os.path.join(data_path,'push_augmentor') #
 # #test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
 # test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
-original_dir = os.path.join(data_path, 'push_e_valid') # dir containing the push and valid data to be then split
-augm_dir = os.path.join(data_path, 'push_e_valid_augm') # dir containing the augmented versions of push and valid data to be then split
-path_to_csv_original = os.path.join(data_path, 'push_e_valid_original.csv') # csv of original files with patient_id column
-path_to_csv_augmented = os.path.join(data_path, 'push_e_valid_augm.csv') # csv of augmented files with patient_id column
+original_dir = os.path.join(data_path, 'push_e_valid_augmented') # dir containing the push and valid data to be then split
+augm_dir = os.path.join(data_path, 'push_e_valid_augmentor') # dir containing the augmented versions of push and valid data to be then split
+path_to_csv_original = os.path.join(original_dir, 'push_e_valid_augmented.csv') # csv of original files with patient_id column
+path_to_csv_augmented = os.path.join(augm_dir, 'push_e_valid_augmentor.csv') # csv of augmented files with patient_id column
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
