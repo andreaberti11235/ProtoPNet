@@ -169,7 +169,7 @@ def get_N_HyperparamsConfigs(N=0, lr=lr, wd=wd, dropout_rate=dropout_rate, dropo
     return [configurations[x] for x in chosen_configs]
 
 
-def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, num_epochs=25, is_inception=False, window=20, patience=3):
+def train_model(model, dataloaders, criterion, optimizer, output_dir, scheduler_name=None, num_epochs=25, is_inception=False, window=20, patience=3):
     since = time.time()
     val_acc_history = []
     train_acc_history = []
@@ -755,12 +755,6 @@ for model_name in model_names:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             
-        
-        with open(os.path.join(output_dir,'train_metrics.txt'),'w') as f_out:
-            f_out.write('epoch,loss,accuracy\n')
-        
-        with open(os.path.join(output_dir,'val_metrics.txt'),'w') as f_out:
-            f_out.write('epoch,loss,accuracy\n')
             
         with open(os.path.join(output_dir,'run_info.txt'),'w') as f_out:
              f_out.write(run_info_to_be_written)
@@ -833,6 +827,12 @@ for model_name in model_names:
                     
             if not os.path.exists(output_dir_fold):
                 os.makedirs(output_dir_fold)
+
+            with open(os.path.join(output_dir_fold,'train_metrics.txt'),'w') as f_out:
+                f_out.write('epoch,loss,accuracy\n')
+        
+            with open(os.path.join(output_dir_fold,'val_metrics.txt'),'w') as f_out:
+                f_out.write('epoch,loss,accuracy\n')
 
             print(f'Proporzione di maligni su totale TRAIN: {np.sum(y[train_idx])/len(y[train_idx])}')
             print(f'Proporzione di maligni su totale VALID_AUGM: {np.sum(y[valid_augm_idx])/len(y[valid_augm_idx])}')
@@ -967,7 +967,7 @@ for model_name in model_names:
             
 
             # Train and evaluate
-            model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, scheduler_name, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
+            model_ft, val_accs, train_accs, val_loss, train_loss, best_accuracy= train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, output_dir_fold, scheduler_name, num_epochs=num_epochs, is_inception=(model_name=="inception"),window=window, patience=patience)
             
             best_val_accuracy_folds.append(best_accuracy)
 
