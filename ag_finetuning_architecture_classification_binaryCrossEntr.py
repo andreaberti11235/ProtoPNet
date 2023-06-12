@@ -750,7 +750,7 @@ for model_name in model_names:
         
        
         experiment_run = f'DBT_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
-        output_dir = f'./saved_models_baseline/{model_name}/{experiment_run}'
+        output_dir = f'./saved_models_baseline_kfold/{model_name}/{experiment_run}'
         
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
