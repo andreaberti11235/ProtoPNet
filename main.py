@@ -171,7 +171,8 @@ def main():
      {'params': ppnet.add_on_layers.parameters(), 'lr': joint_optimizer_lrs['add_on_layers'], 'weight_decay': 1e-3},
      {'params': ppnet.prototype_vectors, 'lr': joint_optimizer_lrs['prototype_vectors']},
     ]
-    joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
+    #joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
+    joint_optimizer = torch.optim.SGD(joint_optimizer_specs)
     # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=joint_lr_step_size, gamma=0.1)
     
     from settings import warm_optimizer_lrs

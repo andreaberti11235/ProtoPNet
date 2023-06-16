@@ -1,4 +1,4 @@
-experiment_task = 'CBIS_massBenignMalignant' #'ADNI' 
+experiment_task = 'ProcancerI-HGLG' #'ADNI' 
 # base_architecture = 'vgg19'
 base_architecture = 'resnet18' #'resnet50'
 #base_architecture = 'densenet121'
@@ -6,8 +6,8 @@ base_architecture = 'resnet18' #'resnet50'
 
 img_size = 224 #124# 224 #336
 num_classes = 2 
-num_prots_per_class = 10
-num_filters = 512 #256 #128 #256
+num_prots_per_class = 3
+num_filters = 128 #512 #256 #128 #256
 prototype_shape = (num_classes*num_prots_per_class, num_filters, 1, 1) #40 #60 #16 #40
 prototype_activation_function = 'log'
 # add_on_layers_type = 'regular'
@@ -16,7 +16,8 @@ add_on_layers_type = 'bottleneck'
 dropout_proportion = 0.4 #TODO aggiunto noi
 
 data_path = './datasets/' #
-train_dir = data_path + 'push_augmented/' #
+train_dir = data_path + 'train/'
+#train_dir = data_path + 'push_augmented/' #
 # train_dir = data_path + 'push/' # TODO
 
 
@@ -24,7 +25,8 @@ test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
 
-train_push_dir = data_path + 'push/' #
+train_push_dir = data_path + 'train/' #
+# train_push_dir = data_path + 'push/' #
 train_batch_size = 40 #25 #50 #35 #80 #20 #30 #25 #12 #20 #
 test_batch_size = 2 #20 #60 #40 #100 #20 #25 #20 #10 #
 train_push_batch_size = 40 #25 #50 #35 #75 #20 #30 #25 #15 #20 # 10 #
