@@ -1,4 +1,4 @@
-experiment_task = 'ON_TEST_CBIS_massBenignMalignant' #'ADNI' 
+experiment_task = 'ProcancerI-HGLG' #'ADNI' 
 # base_architecture = 'vgg19'
 base_architecture = 'resnet18' #'resnet50'
 #base_architecture = 'densenet121'
@@ -6,8 +6,8 @@ base_architecture = 'resnet18' #'resnet50'
 
 img_size = 224 #124# 224 #336
 num_classes = 2 
-num_prots_per_class = 40 #40 #TODO
-num_filters = 512 #256 #128 #256 #TODO
+num_prots_per_class = 5 #40 #TODO
+num_filters = 128 #512 #256 #128 #256 #TODO
 prototype_shape = (num_classes*num_prots_per_class, num_filters, 1, 1) #40 #60 #16 #40
 prototype_activation_function = 'log'
 # add_on_layers_type = 'regular'
@@ -19,20 +19,22 @@ dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
-train_dir = data_path + 'push_e_valid_MLO_augmented_deep/' #
+# train_dir = data_path + 'push_e_valid_MLO_augmented_deep/' #
+train_dir = data_path + 'train/' # TODO
 # train_dir = data_path + 'push/' # TODO
 
 
-# test_dir = data_path + 'valid' #'valid/' #
+test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
-test_dir = data_path + 'test/' #'valid/' #TODO
+# test_dir = data_path + 'test/' #'valid/' #TODO
 
 # train_push_dir = data_path + 'push/' #
-train_push_dir = data_path + 'push_e_valid_MLO/push_e_valid/' #
+train_push_dir = data_path + 'train/' #
+# train_push_dir = data_path + 'push_e_valid_MLO/push_e_valid/' #
 
 train_batch_size = 20 #40
 test_batch_size = 2
-train_push_batch_size = 40 #90 #40 #4
+train_push_batch_size = 20 #90 #40 #4
 
 joint_optimizer_lrs = {'features': 1e-06, #1e-06,#1e-4 #TODO
                        'add_on_layers': 1e-06, #3e-3,
@@ -51,7 +53,7 @@ coefs = {
     'l1': 1e-5
 }
 
-num_train_epochs = 42 #TODO era 1000 con EarlyStopping
+num_train_epochs = 200 #TODO era 1000 con EarlyStopping
 num_warm_epochs = 5
 
 push_start = 10
