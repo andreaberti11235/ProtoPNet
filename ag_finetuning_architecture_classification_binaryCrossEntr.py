@@ -25,9 +25,11 @@ from time import gmtime,strftime
 
 
 data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmentor') #
+train_dir = os.path.join(data_path,'train') 
+#train_dir = os.path.join(data_path,'push_augmentor') #
 #test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
-test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
+#test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
+test_dir = os.path.join(data_path,'valid') #'valid/' #
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
@@ -723,7 +725,7 @@ for model_name in model_names:
         test_batch_size = batch_size_valid
         
        
-        experiment_run = f'DBT_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
+        experiment_run = f'proc_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
         output_dir = f'./saved_models_baseline/{model_name}/{experiment_run}'
         
         if not os.path.exists(output_dir):
