@@ -142,7 +142,8 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-set_seed(seed=1)
+set_seed(seed=42)
+#set_seed(seed=1)
 
 
 
@@ -820,7 +821,8 @@ for model_name in model_names:
         best_val_accuracy_folds = []
    
         k = 5
-        x = StratifiedGroupKFold(n_splits=k, shuffle=True, random_state=42) #reproducibility, 5-fold
+        x = StratifiedGroupKFold(n_splits=k, shuffle=True, random_state=1) #reproducibility, 5-fold
+        #x = StratifiedGroupKFold(n_splits=k, shuffle=True, random_state=42) #reproducibility, 5-fold
         for fold, (train_idx, valid_augm_idx) in enumerate(x.split(X,y,groups=group)):
             
             output_dir_fold = os.path.join(output_dir, f'fold{fold}')
