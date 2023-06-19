@@ -20,8 +20,8 @@ dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
 # train_dir = data_path + 'push_e_valid_MLO_augmented_deep/' #
-train_dir = data_path + 'train_augmented/' # TODO
-#train_dir = data_path + 'train/' # TODO
+#train_dir = data_path + 'train_augmented/' # TODO
+train_dir = data_path + 'train/' # TODO
 # train_dir = data_path + 'push/' # TODO
 
 
