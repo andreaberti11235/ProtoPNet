@@ -32,19 +32,19 @@ test_dir = data_path + 'valid' #'valid/' #
 train_push_dir = data_path + 'train/' #
 # train_push_dir = data_path + 'push_e_valid_MLO/push_e_valid/' #
 
-train_batch_size = 20 #40
+train_batch_size = 10 #40
 test_batch_size = 2
-train_push_batch_size = 20 #90 #40 #4
+train_push_batch_size = 10 #90 #40 #4
 
-joint_optimizer_lrs = {'features': 1e-06, #1e-06,#1e-4 #TODO
-                       'add_on_layers': 1e-06, #3e-3,
-                       'prototype_vectors': 1e-06} #3e-3}
+joint_optimizer_lrs = {'features': 1e-4, #1e-06, #1e-06,#1e-4 #TODO
+                       'add_on_layers': 3e-3, #1e-06, #3e-3,
+                       'prototype_vectors': 3e-3} #1e-06} #3e-3}
 joint_lr_step_size = 10 #5 #TODO
 
-warm_optimizer_lrs = {'add_on_layers': 1e-06, #3e-3,
-                      'prototype_vectors': 1e-06} #3e-3}
+warm_optimizer_lrs = {'add_on_layers': 3e-3, #1e-06, #3e-3,
+                      'prototype_vectors': 3e-3} #1e-06} #3e-3}
 
-last_layer_optimizer_lr = 1e-06 #1e-4
+last_layer_optimizer_lr = 1e-04 #1e-6
 
 coefs = {
     'crs_ent': 1,
