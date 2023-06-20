@@ -1,4 +1,4 @@
-experiment_task = 'DBT_ciao' #'ADNI' 
+experiment_task = 'DBT' #'ADNI' 
 # base_architecture = 'vgg19'
 base_architecture = 'resnet18' #'resnet50'
 #base_architecture = 'densenet121'
