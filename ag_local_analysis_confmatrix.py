@@ -185,14 +185,15 @@ metrics_acc = accuracy_score(y_true,y_pred)
 metrics_bal_acc = balanced_accuracy_score(y_true,y_pred)
 metrics_precision = precision_score(y_true,y_pred)
 metrics_recall = recall_score(y_true,y_pred)
+metrics_specificity = recall_score(y_true, y_pred, pos_label=0)
 metrics_f1score = f1_score(y_true,y_pred)
 metrics_f2score = fbeta_score(y_true, y_pred, beta=2)
 metrics_auroc = roc_auc_score(y_true,y_score)
 
 
 with open(os.path.join(out_parent,'metrics.txt'),'w') as fout:
-    fout.write('acc,bal_acc,precision,recall,f1score,f2score,auroc_malignant\n')
-    fout.write(f'{metrics_acc},{metrics_bal_acc},{metrics_precision},{metrics_recall},{metrics_f1score},{metrics_f2score},{metrics_auroc}')
+    fout.write('acc,bal_acc,precision,recall,specificity,f1score,f2score,auroc_malignant\n')
+    fout.write(f'{metrics_acc},{metrics_bal_acc},{metrics_precision},{metrics_recall},{metrics_specificity},{metrics_f1score},{metrics_f2score},{metrics_auroc}')
 
 cf_mat_norm = confusion_matrix(y_true, y_pred, normalize='true')
 cf_mat = confusion_matrix(y_true, y_pred).astype(int)
