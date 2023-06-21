@@ -27,6 +27,7 @@ original_dir = data_path + 'tutte_MLO' #
 # test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
+test_dir = data_path + 'test/' #'valid/' #TODO
 
 # train_push_dir = data_path + 'push/' #
 augm_dir = data_path + 'tutte_MLO_augmented' #
