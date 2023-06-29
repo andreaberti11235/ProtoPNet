@@ -34,9 +34,9 @@ train_batch_size = 10 #20 #40
 test_batch_size = 2
 train_push_batch_size = 10 #40 #90 #40 #4
 
-joint_optimizer_lrs = {'features': 5e-05, #1e-06,#1e-4 #TODO
-                       'add_on_layers': 1e-06, #3e-3,
-                       'prototype_vectors': 1e-06} #3e-3}
+joint_optimizer_lrs = {'features': 5e-04, #1e-06,#1e-4 #TODO
+                       'add_on_layers': 1e-05, #3e-3,
+                       'prototype_vectors': 1e-05} #3e-3}
 joint_lr_step_size = 10 #5 #TODO
 
 warm_optimizer_lrs = {'add_on_layers': 1e-06, #3e-3,
@@ -51,7 +51,7 @@ coefs = {
     'l1': 1e-5
 }
 
-num_train_epochs = 42 #TODO era 1000 con EarlyStopping
+num_train_epochs = 100 #42 #TODO era 1000 con EarlyStopping
 num_warm_epochs = 5
 
 push_start = 10
