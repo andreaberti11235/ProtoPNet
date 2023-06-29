@@ -259,8 +259,8 @@ def main():
             penultimo = np.mean(loss_npy[-2*window:-window])
             
             if ultimo-penultimo >= 0:
-                # triggered_count+=1 #set #TODO usa questa linea non quella sotto
-                triggered_count=0
+                triggered_count+=1 #set #TODO usa questa linea non quella sotto
+                #triggered_count=0
             elif ultimo-penultimo < 0:
                 #reset
                 triggered_count=0 
