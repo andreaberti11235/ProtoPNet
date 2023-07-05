@@ -117,6 +117,7 @@ other_datasets/
 saved_models_baseline/
 datasets_crop600/
 saved_models_review/
+saved_models_baseline_kfold/
 
 # py scripts (custom)
 ag_finetuning_architecture_classification_binaryCrossEntr_crop600.py
