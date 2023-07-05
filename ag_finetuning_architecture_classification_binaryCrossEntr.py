@@ -65,7 +65,7 @@ parse.add_argument('d2Dr', help='Dropout 2D rate to be added after Conv2D layers
 #Add string of information about the specific experiment run, as dataset used, images specification, etc
 parse.add_argument('run_info', help='Plain-text string of information about the specific experiment run, as the dataset used, the images specification, etc. This is saved in run_info.txt', type=str)
 parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For ResnNet. Number of Convolutional layers after which to add a Dropout layer (default is 1)')
-parse.add_argument('-o', '--optimiser', default='adam', type=str, choices=['adam', 'AdaBelief', 'rms_prop', 'sgd'], help='Specify the name of the optimiser (default is adam)')
+parse.add_argument('-o', '--optimiser', default='sgd', type=str, choices=['adam', 'AdaBelief', 'rms_prop', 'sgd'], help='Specify the name of the optimiser (default is adam)')
 parse.add_argument('-sch', '--scheduler', type=str, choices=['ReduceLROnPlateau', 'StepLR'], help='If added, use the specified LR scheduler during training phase')
 parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model', action='store_true')
 
@@ -957,7 +957,7 @@ for model_name in model_names:
             elif optimiser == 'rms_prop':
                 optimizer_ft = torch.optim.RMSprop(joint_optimizer_specs)
             if scheduler_name == 'StepLR':
-                joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value, verbose=True)
+                joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer_ft, step_size=joint_lr_step_size, gamma=gamma_value)
             elif scheduler_name == 'ReduceLROnPlateau':
                 joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='min', factor=factor, patience=patience_lr, verbose=True)
                 # joint_lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer_ft, mode='max', factor=factor, patience=joint_lr_step_size, verbose=True)
