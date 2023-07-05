@@ -284,7 +284,7 @@ def train_model(model, dataloaders, criterion, optimizer, output_dir, scheduler_
                         if count ==1:
                             model_wts_earlyStopped = copy.deepcopy(model.state_dict())                        
                             torch.save(obj=model, f=os.path.join(output_dir,('earlyStopped_epoch_{}_acc_{:.4f}.pth').format(epoch, epoch_acc)))
-                            print('Modello salvato per quando verrà stoppato allenamento')
+                            print('Modello salvato per quando verra\' stoppato allenamento')
                         if count >= patience:
                             to_be_stopped = True
                             print(f'PAZIENZA SUPERATA EPOCA {epoch}, ESCO')
