@@ -297,16 +297,16 @@ def main():
             
             
             
-            # if triggered_count==1:
-            #     earlystopped_acc = accu  
-            #     best_acc = earlystopped_acc
-            #     save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
-            #                                 target_accu=0.50, log=log)
+            if triggered_count==1:
+                earlystopped_acc = accu  
+                best_acc = earlystopped_acc
+                save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
+                                            target_accu=0.50, log=log)
             
-            earlystopped_acc = accu  
-            best_acc = earlystopped_acc
-            save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
-                                        target_accu=0.50, log=log)
+            #earlystopped_acc = accu  
+            #best_acc = earlystopped_acc
+            #save.save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=earlystopped_acc,
+             #                           target_accu=0.50, log=log)
             
             
             
