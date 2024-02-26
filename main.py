@@ -93,7 +93,6 @@ def main():
     train_dataset = datasets.ImageFolder(
         train_dir,
         transforms.Compose([
-            transforms.Grayscale(num_output_channels=3), #TODO
             transforms.Resize(size=(img_size, img_size)),
             transforms.ToTensor(),
             normalize,
@@ -105,7 +104,6 @@ def main():
     train_push_dataset = datasets.ImageFolder(
         train_push_dir,
         transforms.Compose([
-            transforms.Grayscale(num_output_channels=3),
             transforms.Resize(size=(img_size, img_size)),
             transforms.ToTensor(),
         ]))
@@ -116,7 +114,6 @@ def main():
     test_dataset = datasets.ImageFolder(
         test_dir,
         transforms.Compose([
-            transforms.Grayscale(num_output_channels=3),
             transforms.Resize(size=(img_size, img_size)),
             transforms.ToTensor(),
             normalize,
