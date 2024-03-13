@@ -100,6 +100,11 @@ def main():
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=train_batch_size, shuffle=True,
         num_workers=workers, pin_memory=False) #TODO cambiare num_workers=4*num_gpu
+    
+    # This will give you the class-to-index mapping
+    class_order = train_dataset.class_to_idx
+    print(class_order)
+    
     # push set
     train_push_dataset = datasets.ImageFolder(
         train_push_dir,
