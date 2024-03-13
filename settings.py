@@ -4,7 +4,7 @@ base_architecture = 'resnet18' #'resnet50'
 #base_architecture = 'densenet121'
 
 
-img_size = 224 #124# 224 #336
+img_size = 64 #224 #124# 224 #336
 num_classes = 2 
 num_prots_per_class = 5 #40 #TODO
 num_filters = 128 #512 #256 #128 #256 #TODO
@@ -13,9 +13,9 @@ prototype_activation_function = 'log'
 # add_on_layers_type = 'regular'
 add_on_layers_type = 'bottleneck'
 
-wd = 1e-3 #TODO
+wd = 1e-1 #TODO
 num_layers_to_train = 20 #TODO aggiunto da noi
-dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
+dropout_proportion = 0.1 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
@@ -25,7 +25,7 @@ train_dir = data_path + 'train/' # TODO
 # train_dir = data_path + 'push/' # TODO
 
 
-test_dir = data_path + 'valid' #'valid/' #
+test_dir = data_path + 'val' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
 
@@ -37,15 +37,15 @@ train_batch_size = 10 #40
 test_batch_size = 2
 train_push_batch_size = 10 #90 #40 #4
 
-joint_optimizer_lrs = {'features': 1e-3, #1e-06, #1e-06,#1e-4 #TODO
-                       'add_on_layers': 3e-2, #1e-06, #3e-3,
-                       'prototype_vectors': 3e-2} #1e-06} #3e-3}
+joint_optimizer_lrs = {'features': 1e-4, #1e-06, #1e-06,#1e-4 #TODO
+                       'add_on_layers': 1e-4, #1e-06, #3e-3,
+                       'prototype_vectors': 1e-4} #1e-06} #3e-3}
 joint_lr_step_size = 10 #5 #TODO
 
-warm_optimizer_lrs = {'add_on_layers': 3e-2, #1e-06, #3e-3,
-                      'prototype_vectors': 3e-2} #1e-06} #3e-3}
+warm_optimizer_lrs = {'add_on_layers': 1e-4, #3e-2, #1e-06, #3e-3,
+                      'prototype_vectors': 1e-4}#3e-2} #1e-06} #3e-3}
 
-last_layer_optimizer_lr = 1e-03 #1e-04 #1e-6
+last_layer_optimizer_lr = 1e-4 #1e-03 #1e-04 #1e-6
 
 coefs = {
     'crs_ent': 1,
