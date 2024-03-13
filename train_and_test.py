@@ -25,6 +25,10 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     
     losses_list = []
 
+    class_samples = [1552, 4045]
+    # Calculate the weight for each class
+    weights = torch.tensor([max(class_samples) / x for x in class_samples])
+
     for i, (image, label) in enumerate(tqdm(dataloader)):
         input = image.cuda()
         target = label.cuda()
@@ -42,7 +46,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
             #         outfile.write(str(probs)+'\n')
                     
             # compute loss
-            cross_entropy = torch.nn.functional.cross_entropy(output, target)
+            cross_entropy = torch.nn.functional.cross_entropy(output, target, weight=weights)
 
             if class_specific:
                 max_dist = (model.module.prototype_shape[1]
