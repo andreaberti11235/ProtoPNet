@@ -28,6 +28,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     class_samples = [1552, 4045]
     # Calculate the weight for each class
     weights = torch.tensor([max(class_samples) / x for x in class_samples])
+    weights.cuda()
 
     for i, (image, label) in enumerate(tqdm(dataloader)):
         input = image.cuda()
