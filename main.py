@@ -87,8 +87,8 @@ def main():
     if warm_lrs_prot is not None:
         warm_optimizer_lrs['prototype_vectors'] = warm_lrs_prot  
     
-    if args.last_layer_optimizer_lr is not None:
-        last_layer_optimizer_lr = args.last_layer_optimizer_lr
+    if args.last_layer_lr is not None:
+        last_layer_optimizer_lr = args.last_layer_lr
     else:
         from settings import last_layer_optimizer_lr    
 
