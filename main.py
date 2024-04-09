@@ -42,9 +42,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('gpuid', nargs=1, type=str) #TODO
     # python3 main.py -gpuid=0,1,2,3
-    parser.add_argument('-jolr', '--joint_optimizer_lrs', type=json.loads, help='Joint optimizer learning rates in JSON format (ex. {"features": 5e-05, "add_on_layers": 1e-06, "prototype_vectors": 1e-06})')
-    parser.add_argument('-wolr', '--warm_optimizer_lrs', type=json.loads, help='Warm optimizer learning rates in JSON format (ex. {"add_on_layers": 5e-05, "prototype_vectors": 5e-05})')
-    parser.add_argument('-llolr', '--last_layer_optimizer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
+    parser.add_argument('-jolr_f', '--joint_lrs_features', type=float, help='Joint optimizer learning rates: features')
+    parser.add_argument('-jolr_ao', '--joint_lrs_add_on', type=float, help='Joint optimizer learning rates: add on layers')
+    parser.add_argument('-jolr_p', '--joint_lrs_prot', type=float, help='Joint optimizer learning rates: prototype vectors')
+    parser.add_argument('-wolr_ao', '--warm_lrs_add_on', type=float, help='Warm optimizer learning rates: add_on_layers')
+    parser.add_argument('-wolr_p', '--warm_lrs_prot', type=float, help='Warm optimizer learning rates: prototype vectors')
+    parser.add_argument('-llolr', '--last_layer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
     parser.add_argument('--wd', type=float, help='Weight decay')
 
     parser.add_argument('runinfo', nargs=1, type=str) #TODO
@@ -58,15 +61,30 @@ def main():
     os_env_cudas_splits = os_env_cudas.split(sep=',')
     workers = 4*len(os_env_cudas_splits) #TODO METTERE 4* QUANDO POSSIBILE
     
-    if args.joint_optimizer_lrs is not None:
-        joint_optimizer_lrs = args.joint_optimizer_lrs
-    else:
-        from settings import joint_optimizer_lrs
+    joint_lrs_features = args.joint_lrs_features
+    joint_lrs_add_on = args.joint_lrs_add_on
+    joint_lrs_prot = args.joint_lrs_prot
+
+    warm_lrs_add_on = args.warm_lrs_add_on
+    warm_lrs_prot = args.warm_lrs_prot
+
+
+    from settings import joint_optimizer_lrs, warm_optimizer_lrs
+
+    if joint_lrs_features is not None:
+        joint_optimizer_lrs['features'] = joint_lrs_features
+
+    if joint_lrs_add_on is not None:
+        joint_optimizer_lrs['add_on_layers'] = joint_lrs_add_on
+
+    if joint_lrs_prot is not None:
+        joint_optimizer_lrs['prototype_vectors'] = joint_lrs_prot 
+
+    if warm_lrs_add_on is not None:
+        warm_optimizer_lrs['add_on_layers'] = warm_lrs_add_on    
     
-    if args.warm_optimizer_lrs is not None:
-        warm_optimizer_lrs = args.warm_optimizer_lrs
-    else:
-        from settings import warm_optimizer_lrs
+    if warm_lrs_prot is not None:
+        warm_optimizer_lrs['prototype_vectors'] = warm_lrs_prot  
     
     if args.last_layer_optimizer_lr is not None:
         last_layer_optimizer_lr = args.last_layer_optimizer_lr
