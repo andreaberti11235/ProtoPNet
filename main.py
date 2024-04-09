@@ -21,6 +21,7 @@ import save
 from log import create_logger
 from preprocess import mean, std, preprocess_input_function
 
+import json
 import numpy as np
 import random
 from matplotlib import pyplot as plt
@@ -37,9 +38,15 @@ def set_seed(seed):
 def main():
     start = time.time()
     set_seed(seed=1)
+
     parser = argparse.ArgumentParser()
     parser.add_argument('gpuid', nargs=1, type=str) #TODO
     # python3 main.py -gpuid=0,1,2,3
+    parser.add_argument('-jolr', '--joint_optimizer_lrs', type=json.loads, help='Joint optimizer learning rates in JSON format (ex. {"features": 5e-05, "add_on_layers": 1e-06, "prototype_vectors": 1e-06})')
+    parser.add_argument('-wolr', '--warm_optimizer_lrs', type=json.loads, help='Warm optimizer learning rates in JSON format (ex. {"add_on_layers": 5e-05, "prototype_vectors": 5e-05})')
+    parser.add_argument('-llolr', '--last_layer_optimizer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
+    parser.add_argument('--wd', type=float, help='Weight decay')
+
     parser.add_argument('runinfo', nargs=1, type=str) #TODO
 
     args = parser.parse_args()
@@ -51,6 +58,25 @@ def main():
     os_env_cudas_splits = os_env_cudas.split(sep=',')
     workers = 4*len(os_env_cudas_splits) #TODO METTERE 4* QUANDO POSSIBILE
     
+    if args.joint_optimizer_lrs is not None:
+        joint_optimizer_lrs = args.joint_optimizer_lrs
+    else:
+        from settings import joint_optimizer_lrs
+    
+    if args.warm_optimizer_lrs is not None:
+        warm_optimizer_lrs = args.warm_optimizer_lrs
+    else:
+        from settings import warm_optimizer_lrs
+    
+    if args.last_layer_optimizer_lr is not None:
+        last_layer_optimizer_lr = args.last_layer_optimizer_lr
+    else:
+        from settings import last_layer_optimizer_lr    
+
+    if args.wd is not None:
+        wd = args.wd
+    else:
+        from settings import wd   
     
     # book keeping namings and code
     from settings import base_architecture, img_size, prototype_shape, num_classes, \
@@ -172,7 +198,8 @@ def main():
 
         
     # define optimizer
-    from settings import joint_optimizer_lrs, joint_lr_step_size, wd
+    # from settings import joint_optimizer_lrs, joint_lr_step_size, wd
+    from settings import joint_lr_step_size
     
     joint_optimizer_specs = \
     [{'params': ppnet.features.parameters(), 'lr': joint_optimizer_lrs['features'], 'weight_decay': wd}, # bias are now also being regularized
@@ -183,7 +210,7 @@ def main():
     joint_optimizer = torch.optim.SGD(joint_optimizer_specs)
     # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=joint_lr_step_size, gamma=0.1)
     
-    from settings import warm_optimizer_lrs
+    # from settings import warm_optimizer_lrs
     warm_optimizer_specs = \
     [{'params': ppnet.add_on_layers.parameters(), 'lr': warm_optimizer_lrs['add_on_layers'], 'weight_decay': wd},
      {'params': ppnet.prototype_vectors, 'lr': warm_optimizer_lrs['prototype_vectors']},
@@ -191,7 +218,7 @@ def main():
     # warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
     warm_optimizer = torch.optim.SGD(warm_optimizer_specs)
 
-    from settings import last_layer_optimizer_lr
+    # from settings import last_layer_optimizer_lr
     last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(), 'lr': last_layer_optimizer_lr}]
     # last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
     last_layer_optimizer = torch.optim.SGD(last_layer_optimizer_specs)
