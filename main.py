@@ -68,6 +68,7 @@ def main():
     warm_lrs_add_on = args.warm_lrs_add_on
     warm_lrs_prot = args.warm_lrs_prot
 
+    # read the optional arguments: if the argument is not provided, then the value from settings.py is taken
 
     from settings import joint_optimizer_lrs, warm_optimizer_lrs
 
