@@ -49,6 +49,7 @@ def main():
     parser.add_argument('-wolr_p', '--warm_lrs_prot', type=float, help='Warm optimizer learning rates: prototype vectors')
     parser.add_argument('-llolr', '--last_layer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
     parser.add_argument('--wd', type=float, help='Weight decay')
+    parser.add_argument('-idx', '--exp_idx', type=int, help='Experiment index (for automated submission)')
 
     parser.add_argument('runinfo', nargs=1, type=str) #TODO
 
@@ -95,11 +96,19 @@ def main():
     if args.wd is not None:
         wd = args.wd
     else:
-        from settings import wd   
+        from settings import wd  
+
+    if args.exp_idx is not None:
+        from time import gmtime,strftime
+        from settings import experiment_task
+        experiment_run = f'{experiment_task}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}_{args.exp_idx}'
+    else:
+        from settings import experiment_run
+ 
     
     # book keeping namings and code
     from settings import base_architecture, img_size, prototype_shape, num_classes, \
-                         prototype_activation_function, add_on_layers_type, experiment_run, \
+                         prototype_activation_function, add_on_layers_type, \
                              num_prots_per_class, num_filters
     
     base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
