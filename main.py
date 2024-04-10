@@ -41,6 +41,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('gpuid', nargs=1, type=str) #TODO
+    parser.add_argument('runinfo', nargs=1, type=str) #TODO
     # python3 main.py -gpuid=0,1,2,3
     parser.add_argument('-jolr_f', '--joint_lrs_features', type=float, help='Joint optimizer learning rates: features')
     parser.add_argument('-jolr_ao', '--joint_lrs_add_on', type=float, help='Joint optimizer learning rates: add on layers')
@@ -51,7 +52,7 @@ def main():
     parser.add_argument('--wd', type=float, help='Weight decay')
     parser.add_argument('-idx', '--exp_idx', type=int, help='Experiment index (for automated submission)')
 
-    parser.add_argument('runinfo', nargs=1, type=str) #TODO
+
 
     args = parser.parse_args()
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0] #TODO
