@@ -13,7 +13,7 @@ prototype_activation_function = 'log'
 # add_on_layers_type = 'regular'
 add_on_layers_type = 'bottleneck'
 
-wd = 1e-1 #TODO
+wd = 1e-2 #TODO
 num_layers_to_train = 20 #TODO aggiunto da noi
 dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
 
