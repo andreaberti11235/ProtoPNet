@@ -435,8 +435,8 @@ def main():
     plt.savefig(os.path.join(model_dir,'loss_noiter.pdf'))
 
     
-    with open('./saved_models/experiments_setup.txt', 'a') as out_file:
-        out_file.write(f'{experiment_run},{base_architecture},{img_size},{num_classes},{num_prots_per_class},{num_filters},{train_batch_size},{test_batch_size},{train_push_batch_size},{coeff_crs_ent},{coeff_clst},{coeff_sep},{num_warm_epochs},{num_train_epochs},{dropout_proportion},{run_time}\n')
+    with open('./saved_models/experiments_setup_automated.txt', 'a') as out_file:
+        out_file.write(f'{experiment_run},{base_architecture},{num_classes},{num_prots_per_class},{joint_optimizer_lrs},{warm_optimizer_lrs},{last_layer_optimizer_lr},{wd},{run_time}\n\n')
     
 if __name__ == '__main__':
     main()
