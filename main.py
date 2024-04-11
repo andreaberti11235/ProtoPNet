@@ -125,7 +125,8 @@ def main():
         fout.write(f'joint_optimizer_lrs = {joint_optimizer_lrs}\n')
         fout.write(f'warm_optimizer_lrs = {warm_optimizer_lrs}\n')
         fout.write(f'last_layer_optimizer_lr = {last_layer_optimizer_lr}\n')
-        fout.write(f'wd = {wd}')
+        fout.write(f'wd = {wd}\n')
+        fout.write(f'i = {args.exp_idx}')
     #
     shutil.copy(src=os.path.join(os.getcwd(), __file__), dst=model_dir)
     shutil.copy(src=os.path.join(os.getcwd(), 'settings.py'), dst=model_dir)
