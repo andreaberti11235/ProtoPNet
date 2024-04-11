@@ -436,7 +436,7 @@ def main():
 
     
     with open('./saved_models/experiments_setup_automated.txt', 'a') as out_file:
-        out_file.write(f'{experiment_run},{base_architecture},{num_classes},{num_prots_per_class},{joint_optimizer_lrs},{warm_optimizer_lrs},{last_layer_optimizer_lr},{wd},{run_time}\n\n')
+        out_file.write(f'{experiment_run},{np.round(best_acc, decimals=2)},{base_architecture},{num_classes},{num_prots_per_class},{joint_optimizer_lrs},{warm_optimizer_lrs},{last_layer_optimizer_lr},{wd},{run_time}\n\n')
     
 if __name__ == '__main__':
     main()
