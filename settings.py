@@ -15,7 +15,7 @@ add_on_layers_type = 'bottleneck'
 
 wd = 1e-2 #TODO
 num_layers_to_train = 20 #TODO aggiunto da noi
-dropout_proportion = 0.4 #0.7 #TODO aggiunto noi
+dropout_proportion = 0.2 #0.7 #TODO aggiunto noi
 
 data_path = './datasets/' #
 # train_dir = data_path + 'push_augmented/' #
@@ -26,12 +26,13 @@ train_dir = data_path + 'push_augmentor/' #
 # test_dir = data_path + 'valid' #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 test_dir = data_path + 'valid_augmented/' #'valid/' #TODO
+#test_dir = data_path + 'test_augmented/' #'valid/' #TODO
 
 # train_push_dir = data_path + 'push/' #
 train_push_dir = data_path + 'push_augmented/' #
 
 train_batch_size = 10 #20 #40
-test_batch_size = 2
+test_batch_size = 8
 train_push_batch_size = 10 #40 #90 #40 #4
 
 joint_optimizer_lrs = {'features': 5e-05, #1e-06,#1e-4 #TODO
