@@ -129,7 +129,7 @@ def main():
     # book keeping namings and code
     from settings import base_architecture, img_size, \
                          prototype_activation_function, add_on_layers_type, \
-                             num_prots_per_class, num_filters
+                            num_filters
     
     base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
     
@@ -145,6 +145,8 @@ def main():
         fout.write(f'warm_optimizer_lrs = {warm_optimizer_lrs}\n')
         fout.write(f'last_layer_optimizer_lr = {last_layer_optimizer_lr}\n')
         fout.write(f'wd = {wd}\n')
+        fout.write(f'num_prots_per_class = {num_prots_per_class}')
+        fout.write(f'coefs = {coefs}\n')
         fout.write(f'i = {args.exp_idx}')
     #
     shutil.copy(src=os.path.join(os.getcwd(), __file__), dst=model_dir)
