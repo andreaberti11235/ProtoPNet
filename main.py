@@ -51,7 +51,7 @@ def main():
     parser.add_argument('-llolr', '--last_layer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
     parser.add_argument('-nppc', '--num_prots_per_class', type=float, help='Number of prototypes per class')
     parser.add_argument('-c', '--clst', type=float, help='Cluster coefficient for the training algorithm')
-    parser.add_argument('-s', '--sep', type=float, help='Separation coefficient for the training algorithm')
+    parser.add_argument('-s', '--sep', type=float, help='Separation coefficient for the training algorithm (absolute value)')
     parser.add_argument('--wd', type=float, help='Weight decay')
     parser.add_argument('-idx', '--exp_idx', type=int, help='Experiment index (for automated submission)')
 
@@ -111,7 +111,7 @@ def main():
         coefs['clst'] = args.clst
     
     if args.sep is not None:
-        coefs['sep'] = args.sep
+        coefs['sep'] = - args.sep
 
     if args.wd is not None:
         wd = args.wd
