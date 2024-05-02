@@ -49,7 +49,7 @@ def main():
     parser.add_argument('-wolr_ao', '--warm_lrs_add_on', type=float, help='Warm optimizer learning rates: add_on_layers')
     parser.add_argument('-wolr_p', '--warm_lrs_prot', type=float, help='Warm optimizer learning rates: prototype vectors')
     parser.add_argument('-llolr', '--last_layer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
-    parser.add_argument('-nppc', '--num_prots_per_class', type=float, help='Number of prototypes per class')
+    parser.add_argument('-nppc', '--num_prots_per_class', type=int, help='Number of prototypes per class')
     parser.add_argument('-c', '--clst', type=float, help='Cluster coefficient for the training algorithm')
     parser.add_argument('-s', '--sep', type=float, help='Separation coefficient for the training algorithm (absolute value)')
     parser.add_argument('--wd', type=float, help='Weight decay')
