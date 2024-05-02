@@ -49,6 +49,9 @@ def main():
     parser.add_argument('-wolr_ao', '--warm_lrs_add_on', type=float, help='Warm optimizer learning rates: add_on_layers')
     parser.add_argument('-wolr_p', '--warm_lrs_prot', type=float, help='Warm optimizer learning rates: prototype vectors')
     parser.add_argument('-llolr', '--last_layer_lr', type=float, help='Last-layer optimizer learning rate (ex. 5e-06)')
+    parser.add_argument('-nppc', '--num_prots_per_class', type=float, help='Number of prototypes per class')
+    parser.add_argument('-c', '--clst', type=float, help='Cluster coefficient for the training algorithm')
+    parser.add_argument('-s', '--sep', type=float, help='Separation coefficient for the training algorithm')
     parser.add_argument('--wd', type=float, help='Weight decay')
     parser.add_argument('-idx', '--exp_idx', type=int, help='Experiment index (for automated submission)')
 
@@ -73,6 +76,7 @@ def main():
     # read the optional arguments: if the argument is not provided, then the value from settings.py is taken
 
     from settings import joint_optimizer_lrs, warm_optimizer_lrs
+    from settings import coefs
 
     if joint_lrs_features is not None:
         joint_optimizer_lrs['features'] = joint_lrs_features
@@ -94,6 +98,21 @@ def main():
     else:
         from settings import last_layer_optimizer_lr    
 
+    from settings import prototype_shape, num_classes
+
+    if args.num_prots_per_class is not None:
+        num_prots_per_class = args.num_prots_per_class
+        num_filters = prototype_shape[1]
+        prototype_shape = (num_classes*num_prots_per_class, num_filters, 1, 1)
+    else:
+        from settings import num_prots_per_class
+
+    if args.clst is not None:
+        coefs['clst'] = args.clst
+    
+    if args.sep is not None:
+        coefs['sep'] = args.sep
+
     if args.wd is not None:
         wd = args.wd
     else:
@@ -108,7 +127,7 @@ def main():
  
     
     # book keeping namings and code
-    from settings import base_architecture, img_size, prototype_shape, num_classes, \
+    from settings import base_architecture, img_size, \
                          prototype_activation_function, add_on_layers_type, \
                              num_prots_per_class, num_filters
     
@@ -261,7 +280,6 @@ def main():
     last_layer_optimizer = torch.optim.SGD(last_layer_optimizer_specs)
     
     # weighting of different training losses
-    from settings import coefs
     
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     from settings import num_train_epochs, num_warm_epochs, push_start, push_epochs
