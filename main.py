@@ -167,7 +167,7 @@ def main():
         fout.write(f'num_prots_per_class = {num_prots_per_class}\n')
         fout.write(f'coefs = {coefs}\n')
         fout.write(f'LR_scheduler = {LR_scheduler}\n')
-        fout.write(f'joint_lr_scheduler = {joint_lr_scheduler}\n')
+        fout.write(f'joint_lr_step_size = {joint_lr_step_size}\n')
         fout.write(f'gamma = {gamma}\n')
         fout.write(f'i = {args.exp_idx}')
     #
