@@ -39,6 +39,7 @@ joint_optimizer_lrs = {'features': 5e-05, #1e-06,#1e-4 #TODO
                        'add_on_layers': 1e-06, #3e-3,
                        'prototype_vectors': 1e-06} #3e-3}
 joint_lr_step_size = 10 #5 #TODO
+gamma = 0.1
 
 warm_optimizer_lrs = {'add_on_layers': 5e-05, #3e-3,
                       'prototype_vectors': 5e-05} #3e-3}
