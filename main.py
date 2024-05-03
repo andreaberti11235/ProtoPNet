@@ -52,6 +52,9 @@ def main():
     parser.add_argument('-nppc', '--num_prots_per_class', type=int, help='Number of prototypes per class')
     parser.add_argument('-c', '--clst', type=float, help='Cluster coefficient for the training algorithm')
     parser.add_argument('-s', '--sep', type=float, help='Separation coefficient for the training algorithm (absolute value)')
+    parser.add_argument('-LRs', '--LR_scheduler', action='store_false', help='Set to True to use the LR scheduler with default values in settings.py; if --joint_lr_step_size and --gamma are given, it is not mandatory to set this option to True')    
+    parser.add_argument('-lrss', '--joint_lr_step_size', type=float, help='LR step size for LR scheduler in joint epochs')
+    parser.add_argument('-g', '--gamma', type=float, help='Gamma value for LR scheduler in joint epochs')
     parser.add_argument('--wd', type=float, help='Weight decay')
     parser.add_argument('-idx', '--exp_idx', type=int, help='Experiment index (for automated submission)')
 
@@ -72,6 +75,8 @@ def main():
 
     warm_lrs_add_on = args.warm_lrs_add_on
     warm_lrs_prot = args.warm_lrs_prot
+
+    LR_scheduler = args.LR_scheduler
 
     # read the optional arguments: if the argument is not provided, then the value from settings.py is taken
 
@@ -125,7 +130,21 @@ def main():
     else:
         from settings import experiment_run
  
-    
+    if LR_scheduler == True:
+        from settings import joint_lr_step_size, gamma
+
+    if args.joint_lr_step_size is not None:
+        LR_scheduler = True
+        joint_lr_step_size = args.joint_lr_step_size
+    else:
+        from settings import joint_lr_step_size
+
+    if args.gamma is not None:
+        LR_scheduler = True
+        gamma = args.gamma
+    else:
+        from settings import gamma
+
     # book keeping namings and code
     from settings import base_architecture, img_size, \
                          prototype_activation_function, add_on_layers_type, \
@@ -145,8 +164,11 @@ def main():
         fout.write(f'warm_optimizer_lrs = {warm_optimizer_lrs}\n')
         fout.write(f'last_layer_optimizer_lr = {last_layer_optimizer_lr}\n')
         fout.write(f'wd = {wd}\n')
-        fout.write(f'num_prots_per_class = {num_prots_per_class}')
+        fout.write(f'num_prots_per_class = {num_prots_per_class}\n')
         fout.write(f'coefs = {coefs}\n')
+        fout.write(f'LR_scheduler = {LR_scheduler}\n')
+        fout.write(f'joint_lr_scheduler = {joint_lr_scheduler}\n')
+        fout.write(f'gamma = {gamma}\n')
         fout.write(f'i = {args.exp_idx}')
     #
     shutil.copy(src=os.path.join(os.getcwd(), __file__), dst=model_dir)
@@ -257,7 +279,7 @@ def main():
         
     # define optimizer
     # from settings import joint_optimizer_lrs, joint_lr_step_size, wd
-    from settings import joint_lr_step_size
+    # from settings import joint_lr_step_size
     
     joint_optimizer_specs = \
     [{'params': ppnet.features.parameters(), 'lr': joint_optimizer_lrs['features'], 'weight_decay': wd}, # bias are now also being regularized
@@ -266,7 +288,8 @@ def main():
     ]
     # joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
     joint_optimizer = torch.optim.SGD(joint_optimizer_specs)
-    # joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=joint_lr_step_size, gamma=0.1)
+    if LR_scheduler == True:
+        joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=joint_lr_step_size, gamma=gamma)
     
     # from settings import warm_optimizer_lrs
     warm_optimizer_specs = \
