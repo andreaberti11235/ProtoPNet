@@ -25,7 +25,7 @@ from preprocess import mean, std, preprocess_input_function, undo_preprocess_inp
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('test_dir', help='Path to the directory of the test set')
+parser.add_argument('test_dir', nargs=1, type=str, help='Path to the directory of the test set')
 parser.add_argument('-gpuid', nargs=1, type=str, default='0')
 parser.add_argument('-modeldir', nargs=1, type=str)
 parser.add_argument('-model', nargs=1, type=str)
