@@ -343,8 +343,11 @@ def main():
                     if param.requires_grad == True:
                         params_to_update.append(param)
                         log(f"\t\t{name}")
-                
-            # joint_lr_scheduler.step()
+
+            if LR_scheduler == True:    
+                joint_lr_scheduler.step()
+            
+            log("\tLR_joint: \t{0}".format(joint_optimizer_specs))
             accu_train,loss_train = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=joint_optimizer,
                           class_specific=class_specific, coefs=coefs, log=log)
     
