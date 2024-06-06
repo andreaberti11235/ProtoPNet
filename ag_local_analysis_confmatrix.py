@@ -82,7 +82,8 @@ for folder in ['benign', 'malignant']:
     img_dir = os.path.join(test_dir, folder)
     if folder == 'benign':
         real_label = 0
-    if folder == 'malignant':
+    if folder == 'cancer':
+    #if folder == 'malignant':
         real_label = 1
     
     for img in tqdm(glob.glob(os.path.join(img_dir, '*.png'))):
