@@ -207,10 +207,12 @@ original_img = save_preprocessed_img(os.path.join(save_analysis_path, 'original_
 ##### MOST ACTIVATED (NEAREST) 3 PROTOTYPES OF THIS IMAGE
 makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
-log('Most activated 15 prototypes of this image:')
+#log('Most activated 15 prototypes of this image:')
+log('Most activated 10 prototypes of this image:')
 array_act, sorted_indices_act = torch.sort(prototype_activations[idx])
 # for i in range(1,4):
-for i in range(1,16):
+#for i in range(1,16):
+for i in range(1,11):
     log('top {0} activated prototype for this image:'.format(i))
     save_prototype(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype.png' % i),
