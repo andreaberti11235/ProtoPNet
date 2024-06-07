@@ -67,7 +67,8 @@ load_model_dir = os.path.dirname(load_model_path)
 load_model_name = os.path.basename(load_model_path)
 
 sub_folders = ['predette_bene', 'predette male']
-sub_sub_folders = ['benign', 'malignant']
+sub_sub_folders = ['benign', 'cancer']
+#sub_sub_folders = ['benign', 'malignant']
 
 for sub_folder in sub_folders:
     for sub_sub_folder in sub_sub_folders:
@@ -78,7 +79,8 @@ for sub_folder in sub_folders:
 y = []
 
 
-for folder in ['benign', 'malignant']:
+for folder in ['benign', 'cancer']:
+#for folder in ['benign', 'malignant']:
     img_dir = os.path.join(test_dir, folder)
     if folder == 'benign':
         real_label = 0
