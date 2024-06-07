@@ -28,6 +28,16 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sn
 import pandas as pd
 
+from sklearn.metrics import confusion_matrix, \
+                            accuracy_score, \
+                            balanced_accuracy_score, \
+                            precision_score, \
+                            recall_score, \
+                            roc_auc_score, \
+                            f1_score, \
+                            fbeta_score
+                            
+
 parser = argparse.ArgumentParser()
 parser.add_argument('path_to_model_pth', type=str) #TODO
 parser.add_argument('path_to_test_dir', type=str) #TODO
@@ -59,10 +69,12 @@ def train_model(model, dataloaders, criterion,output_dir):
     running_corrects = 0
     y_pred = []
     y_true = []
+    y_score = []
     with torch.no_grad():
         # Iterate over data.
         for inputs, labels in tqdm(dataloaders):
             inputs = inputs.to(device)
+            labels = labels.float()
             labels = labels.to(device)
     
             # # zero the parameter gradients
@@ -73,18 +85,23 @@ def train_model(model, dataloaders, criterion,output_dir):
             with torch.set_grad_enabled(False):
     
                 outputs = model(inputs)
-                loss = criterion(outputs, labels)                       
+                loss = criterion(outputs, labels.unsqueeze(1))                       
     
-                _, preds = torch.max(outputs, 1)
-
-                preds_npy = preds.data.cpu().numpy()
-                y_pred.extend(preds_npy)
+                y_score_i = outputs.detach().cpu()
                 
-                labels_npy = labels.data.cpu().numpy()
-                y_true.extend(labels_npy)    
+                
+                y_score.extend(y_score_i.tolist())
+                
+                preds_npy = np.round(y_score_i)
+                # preds_npy = preds.data.cpu().numpy()
+                y_pred.extend(preds_npy.tolist())
+                
+                target = np.round(labels.detach().cpu())
+                y_true.extend(target.tolist())    
+                
             # statistics
             running_loss += loss.item() * inputs.size(0)
-            running_corrects += torch.sum(preds == labels.data)
+            running_corrects += torch.sum(torch.round(outputs) == labels.data)
     
     # classes = ('Benign','Malignant') 
     # cf_mat_norm = confusion_matrix(y_true, y_pred, normalize='true')
@@ -110,6 +127,16 @@ def train_model(model, dataloaders, criterion,output_dir):
     #
     epoch_loss = running_loss / len(dataloaders.dataset)
     epoch_acc = running_corrects.double() / len(dataloaders.dataset)
+    
+    
+    # metrics
+    metrics_acc = accuracy_score(y_true,y_pred)
+    metrics_precision = precision_score(y_true,y_pred)
+    metrics_recall = recall_score(y_true,y_pred)
+    metrics_specificity = recall_score(y_true, y_pred, pos_label=0)
+    metrics_f1score = f1_score(y_true,y_pred)
+    metrics_f2score = fbeta_score(y_true, y_pred, beta=2)
+    metrics_auroc = roc_auc_score(y_true,y_score)
 
     # with open(os.path.join(output_dir,'test_metrics.txt'),'w') as f_out:
     #           f_out.write(f'loss,accuracy\n{epoch_loss},{epoch_acc}')
@@ -123,7 +150,7 @@ def train_model(model, dataloaders, criterion,output_dir):
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-    return model, epoch_acc, epoch_loss
+    return model, epoch_acc, epoch_loss, metrics_acc, metrics_precision, metrics_recall, metrics_specificity, metrics_f1score, metrics_f2score, metrics_auroc 
 
 
 
@@ -228,13 +255,13 @@ test_dataset = datasets.ImageFolder(
         normalize,
     ]))
 test_loader = torch.utils.data.DataLoader(
-    test_dataset, batch_size=30, shuffle=False,#False
+    test_dataset, batch_size=1, shuffle=False,#False
     num_workers=4, pin_memory=False)
 
 
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu" #TODO attenzione!
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = "cpu" #TODO attenzione!
 
 
 # Initialize the model for this run
@@ -260,10 +287,15 @@ model_ft = model_ft.to(device)
 
 
 # Setup the loss fxn
-criterion = nn.CrossEntropyLoss()
+criterion = nn.BCELoss()
 
 # evaluate
-model_ft, val_accs, val_loss= train_model(model_ft, test_loader, criterion,output_dir)
+model_ft, val_accs, val_loss, metrics_acc, metrics_precision, metrics_recall, metrics_f1score, metrics_f2score, metrics_auroc = train_model(model_ft, test_loader, criterion,output_dir)
+
+with open(os.path.join(os.path.dirname(path_to_model), 'model_metrics.txt'), 'w') as fout:
+    fout.write('val_accs, metrics_acc, metrics_precision, metrics_recall, metrics_f1score, metrics_f2score, metrics_auroc\n')
+    fout.write(f'{val_accs}, {metrics_acc}, {metrics_precision}, {metrics_recall}, {metrics_f1score}, {metrics_f2score}, {metrics_auroc}\n')
+
 
 
 print('Test, done!')

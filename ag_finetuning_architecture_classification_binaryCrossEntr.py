@@ -25,8 +25,11 @@ from time import gmtime,strftime
 
 
 data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmented') #
-test_dir = os.path.join(data_path,'valid') #'valid/' #
+# train_dir = os.path.join(data_path,'push_augmented') #
+train_dir = os.path.join(data_path,'push_e_valid_MLO_augmented') #
+test_dir = os.path.join(data_path,'test') #'valid/' #
+# test_dir = os.path.join(data_path,'valid') #'valid/' #
+
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
@@ -39,7 +42,7 @@ from sklearn.metrics import accuracy_score
 # import pandas as pd
 
 img_size = 224 #564 #224 #TODO
-num_epochs = 1000 #TODO
+num_epochs = 100 #TODO
 
 
 
@@ -80,7 +83,8 @@ num_classes = 1
 # window = 20
 # patience = int(np.ceil(50/window)) # sono 3*20 epoche ad esempio
 window = 5
-patience = int(np.ceil(12/window)) #3 
+# patience = int(np.ceil(12/window)) #3 
+patience = int(np.ceil(60/window)) #3 
 
 
 print('CUDA visible devices, before and after setting possible multiple GPUs (sanity check):')
