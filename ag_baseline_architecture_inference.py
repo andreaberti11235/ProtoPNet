@@ -133,6 +133,7 @@ def train_model(model, dataloaders, criterion,output_dir):
     metrics_acc = accuracy_score(y_true,y_pred)
     metrics_precision = precision_score(y_true,y_pred)
     metrics_recall = recall_score(y_true,y_pred)
+    metrics_specificity = recall_score(y_true, y_pred, pos_label=0)
     metrics_f1score = f1_score(y_true,y_pred)
     metrics_f2score = fbeta_score(y_true, y_pred, beta=2)
     metrics_auroc = roc_auc_score(y_true,y_score)
@@ -149,7 +150,7 @@ def train_model(model, dataloaders, criterion,output_dir):
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
-    return model, epoch_acc, epoch_loss, metrics_acc, metrics_precision, metrics_recall, metrics_f1score, metrics_f2score, metrics_auroc 
+    return model, epoch_acc, epoch_loss, metrics_acc, metrics_precision, metrics_recall, metrics_specificity, metrics_f1score, metrics_f2score, metrics_auroc 
 
 
 
