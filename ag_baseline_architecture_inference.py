@@ -293,7 +293,7 @@ criterion = nn.BCELoss()
 model_ft, val_accs, val_loss, metrics_acc, metrics_precision, metrics_recall, metrics_specificity, metrics_f1score, metrics_f2score, metrics_auroc = train_model(model_ft, test_loader, criterion,output_dir)
 
 with open(os.path.join(os.path.dirname(path_to_model), 'model_metrics.txt'), 'w') as fout:
-    fout.write('val_accs, metrics_acc, metrics_precision, metrics_recall, metrics_f1score, metrics_f2score, metrics_auroc\n')
+    fout.write('val_accs, metrics_acc, metrics_precision, metrics_recall, metrics_specificity, metrics_f1score, metrics_f2score, metrics_auroc\n')
     fout.write(f'{val_accs}, {metrics_acc}, {metrics_precision}, {metrics_recall}, {metrics_specificity}, {metrics_f1score}, {metrics_f2score}, {metrics_auroc}\n')
 
 
