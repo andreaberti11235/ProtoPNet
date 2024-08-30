@@ -629,53 +629,53 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         
         input_size = img_size  
 
-    # if model_name == "resnet50":
-    #     """ Resnet50
-    #     """
-    #     # model_ft = models.resnet50(pretrained=use_pretrained)
-    #     # set_parameter_requires_grad(model_ft, feature_extract)
-    #     # num_ftrs = model_ft.fc.in_features
-    #     # model_ft.fc = nn.Linear(num_ftrs, num_classes)
-    #     # input_size = img_size   
+    if model_name == "resnet50":
+        """ Resnet50
+        """
+        # model_ft = models.resnet50(pretrained=use_pretrained)
+        # set_parameter_requires_grad(model_ft, feature_extract)
+        # num_ftrs = model_ft.fc.in_features
+        # model_ft.fc = nn.Linear(num_ftrs, num_classes)
+        # input_size = img_size   
         
-    #     model_ft = models.resnet50(pretrained=use_pretrained)
-    #     set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
-    #     num_ftrs = model_ft.fc.in_features
+        model_ft = models.resnet50(pretrained=use_pretrained)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        num_ftrs = model_ft.fc.in_features
    
         
-    #     model_ft.fc = nn.Sequential(
+        model_ft.fc = nn.Sequential(
 
-    #         #Fully connected
-    #         #nn.Linear(num_ftrs,1024),
-    #         #nn.ReLU(),
+            #Fully connected
+            #nn.Linear(num_ftrs,1024),
+            #nn.ReLU(),
                        
-    #         #nn.Linear(1024,512),
-    #         #nn.ReLU(),
+            #nn.Linear(1024,512),
+            #nn.ReLU(),
             
-    #         #Dropout
-    #         #nn.Dropout(p=dropout_rate),
+            #Dropout
+            #nn.Dropout(p=dropout_rate),
             
-    #         # Classification layer
-    #         #nn.Linear(512, num_classes),
-    #         # nn.Softmax() 
-    #         #nn.Sigmoid()
-    #         #)
+            # Classification layer
+            #nn.Linear(512, num_classes),
+            # nn.Softmax() 
+            #nn.Sigmoid()
+            #)
             
-    #         ## VERSIONE CON SOLO DUE FC E NON TRE:
-    #         # #Fully connected
-    #         nn.Linear(num_ftrs,512),
-    #         nn.ReLU(),
+            ## VERSIONE CON SOLO DUE FC E NON TRE:
+            # #Fully connected
+            nn.Linear(num_ftrs,512),
+            nn.ReLU(),
                                   
-    #         # #Dropout
-    #         nn.Dropout(p=dropout_rate),
+            # #Dropout
+            nn.Dropout(p=dropout_rate),
             
-    #         # # Classification layer
-    #         nn.Linear(512, num_classes),
-    #         # # nn.Softmax() 
-    #         nn.Sigmoid()
-    #         )
+            # # Classification layer
+            nn.Linear(512, num_classes),
+            # # nn.Softmax() 
+            nn.Sigmoid()
+            )
         
-    #     input_size = img_size  
+        input_size = img_size  
     
     if model_name == "vgg19":
         """ VGG19
