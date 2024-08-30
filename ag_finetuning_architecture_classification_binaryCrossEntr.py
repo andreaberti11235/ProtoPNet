@@ -312,7 +312,7 @@ def train_model(model, dataloaders, criterion, optimizer, scheduler_name=None, n
 
 
 
-def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, dropout2d_rate):
+def set_parameter_requires_grad(model, feature_extracting, num_layers_to_train, dropout2d_rate=0.2):
     # # Versione: decongelare un numero desiderato di layer a partire dal fondo
     # if feature_extracting:
     #     t = 0
@@ -639,7 +639,7 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, num
         # input_size = img_size   
         
         model_ft = models.resnet50(pretrained=use_pretrained)
-        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train)
+        set_parameter_requires_grad(model_ft, feature_extract, num_layers_to_train, dropout2d_rate=dropout2d_rate)
         num_ftrs = model_ft.fc.in_features
    
         
