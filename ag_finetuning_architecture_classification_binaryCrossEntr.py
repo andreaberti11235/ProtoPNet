@@ -25,10 +25,11 @@ from tqdm import tqdm
 from time import gmtime,strftime
 
 
-data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmentor') #
+# data_path = os.path.join(os.getcwd(),'datasets') #
+data_path = '/leonardo_scratch/large/userexternal/aberti00/DBT/cabrnet/data/DBT_TCIA_5fold/fold0'
+train_dir = os.path.join(data_path,'train') #
 #test_dir = os.path.join(data_path,'test_augmented') #'valid/' #
-test_dir = os.path.join(data_path,'valid_augmented') #'valid/' #
+test_dir = os.path.join(data_path,'test') #'valid/' #
 
 #TODO prenderli corretamente col rispettivo valore calcolato:
 # mean = np.float32(np.uint8(np.load(os.path.join(data_path,'mean.npy')))/255)
@@ -732,7 +733,7 @@ for model_name in model_names:
         
        
         experiment_run = f'DBT_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
-        output_dir = f'./saved_models_baseline/{model_name}/{experiment_run}'
+        output_dir = f'./DBT_cabrnet_baseline/{model_name}/{experiment_run}'
         
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
