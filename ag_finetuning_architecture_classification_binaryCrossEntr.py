@@ -107,8 +107,8 @@ num_classes = 1
 # window = 20
 # patience = int(np.ceil(50/window)) # sono 3*20 epoche ad esempio
 window = 5
-# patience = int(np.ceil(12/window)) #3 
-patience = 500
+patience = int(np.ceil(12/window)) #3 
+# patience = 500
 
 print('CUDA visible devices, before and after setting possible multiple GPUs (sanity check):')
 # print(os.environ['CUDA_VISIBLE_DEVICES'])
