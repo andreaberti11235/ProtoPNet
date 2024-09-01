@@ -62,12 +62,15 @@ parse.add_argument('-nd2d', '--num_dropout_2d', default=1, type=int, help='For R
 parse.add_argument('-o', '--optimiser', default='adam', type=str, choices=['adam', 'AdaBelief', 'rms_prop', 'sgd'], help='Specify the name of the optimiser (default is adam)')
 parse.add_argument('-sch', '--scheduler', type=str, choices=['ReduceLROnPlateau', 'StepLR'], help='If added, use the specified LR scheduler during training phase')
 parse.add_argument('-p', '--pretrained', help='Add this flag to use the pre-trained model', action='store_true')
+parse.add_argument('-s', '--seed', default=1, type=int, help='Value of the seed to be used for reproducibility')
 
 args = parse.parse_args()
 
 num_layers_to_train = args.num_layers_to_train
 actual_model_name = args.model_name
 model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers_{img_size}_imgsize']#TODO clahe?
+
+seed = args.seed
 
 joint_lr_step_size = 50 #5
 gamma_value = 0.3
@@ -127,7 +130,7 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-set_seed(seed=1)
+set_seed(seed=seed)
 
 
 
@@ -732,7 +735,7 @@ for model_name in model_names:
         test_batch_size = batch_size_valid
         
        
-        experiment_run = f'DBT_{model_name}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
+        experiment_run = f'DBT_{model_name}_seed{seed}_{strftime("%a_%d_%b_%Y_%H:%M:%S", gmtime())}'
         output_dir = f'./DBT_cabrnet_baseline/{model_name}/{experiment_run}'
         
         if not os.path.exists(output_dir):
