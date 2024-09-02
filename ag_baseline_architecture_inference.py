@@ -231,7 +231,7 @@ test_dataset = datasets.ImageFolder(
         normalize,
     ]))
 test_loader = torch.utils.data.DataLoader(
-    test_dataset, batch_size=30, shuffle=False,#False
+    test_dataset, batch_size=6, shuffle=False,#False
     num_workers=4, pin_memory=False)
 
 
