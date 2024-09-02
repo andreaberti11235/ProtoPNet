@@ -236,8 +236,8 @@ test_loader = torch.utils.data.DataLoader(
 
 
 
-# device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = "cpu" #TODO attenzione!
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# device = "cpu" #TODO attenzione!
 
 
 # Initialize the model for this run
