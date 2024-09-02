@@ -72,7 +72,7 @@ model_names = [actual_model_name+f'_finetuning_last_{num_layers_to_train}_layers
 
 seed = args.seed
 
-joint_lr_step_size = 50 #5
+joint_lr_step_size = 5 #5
 gamma_value = 0.3
 factor = 0.5
 threshold = 1e-2
