@@ -31,6 +31,7 @@ import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument('path_to_model_pth', type=str) #TODO
 parser.add_argument('path_to_test_dir', type=str) #TODO
+parser.add_argument('-s', '--seed', default=1, type=int, help='Value of the seed to be used for reproducibility')
 
 
 
@@ -45,7 +46,6 @@ def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-set_seed(seed=1)
 
 
 # def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_inception=False):
@@ -211,6 +211,9 @@ def initialize_model(model_name, num_classes, feature_extract, dropout_rate, use
 args = parser.parse_args()
 path_to_model = args.path_to_model_pth
 test_dir = args.path_to_test_dir
+seed = args.seed
+
+set_seed(seed=seed)
 
 
 output_dir = os.path.dirname(path_to_model)
