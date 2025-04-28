@@ -24,11 +24,13 @@ from time import gmtime,strftime
 
 
 data_path = os.path.join(os.getcwd(),'datasets') #
-train_dir = os.path.join(data_path,'push_augmented') #
+# train_dir = os.path.join(data_path,'push_augmented') #
+train_dir = os.path.join(data_path,'push_e_valid_MLO_augmented') #
+
 # train_dir = data_path + 'push/' # TODO
 
 
-test_dir = os.path.join(data_path,'valid') #'valid/' #
+test_dir = os.path.join(data_path,'test') #'valid/' #
 # test_dir = data_path + 'valid_augmented' #'valid/' #
 # test_dir = data_path + 'test/' #'valid/' #TODO
 
@@ -45,7 +47,7 @@ from sklearn.metrics import accuracy_score
 # import pandas as pd
 
 img_size = 224 #564 #224 #TODO
-num_epochs = 1000 #TODO
+num_epochs = 20 #TODO
 
 
 

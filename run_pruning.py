@@ -29,7 +29,7 @@ optimize_last_layer = True
 
 # pruning parameters
 k = 6
-prune_threshold = 3
+prune_threshold = 5
 
 original_model_dir = args.modeldir[0] #'./saved_models/densenet161/003/'
 original_model_name = args.model[0] #'10_16push0.8007.pth'
@@ -60,11 +60,11 @@ class_specific = True
 
 # load the data
 from settings import train_dir, test_dir, train_push_dir
-
-train_batch_size = 80
-test_batch_size = 100
-img_size = 224
-train_push_batch_size = 80
+from settings import train_batch_size, test_batch_size, img_size, train_push_batch_size # TODO
+# train_batch_size = 80
+# test_batch_size = 100
+# img_size = 224
+# train_push_batch_size = 80
 
 normalize = transforms.Normalize(mean=mean,
                                  std=std)
@@ -73,6 +73,10 @@ normalize = transforms.Normalize(mean=mean,
 train_dataset = datasets.ImageFolder(
     train_dir,
     transforms.Compose([
+        # transforms.Resize(size=(img_size, img_size)),
+        # transforms.ToTensor(),
+        # normalize,
+        transforms.Grayscale(num_output_channels=3), #TODO
         transforms.Resize(size=(img_size, img_size)),
         transforms.ToTensor(),
         normalize,
@@ -85,6 +89,10 @@ train_loader = torch.utils.data.DataLoader(
 test_dataset = datasets.ImageFolder(
     test_dir,
     transforms.Compose([
+        # transforms.Resize(size=(img_size, img_size)),
+        # transforms.ToTensor(),
+        # normalize,
+        transforms.Grayscale(num_output_channels=3),
         transforms.Resize(size=(img_size, img_size)),
         transforms.ToTensor(),
         normalize,
@@ -101,6 +109,9 @@ log('batch size: {0}'.format(train_batch_size))
 train_push_dataset = datasets.ImageFolder(
     train_push_dir,
     transforms.Compose([
+        # transforms.Resize(size=(img_size, img_size)),
+        # transforms.ToTensor(),
+        transforms.Grayscale(num_output_channels=3),
         transforms.Resize(size=(img_size, img_size)),
         transforms.ToTensor(),
     ]))
@@ -125,36 +136,36 @@ prune.prune_prototypes(dataloader=train_push_loader,
                        #model_name=None,
                        log=log,
                        copy_prototype_imgs=True)
-accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+accu, _ = tnt.test(model=ppnet_multi, dataloader=test_loader,
                 class_specific=class_specific, log=log)
 save.save_model_w_condition(model=ppnet, model_dir=model_dir,
                             model_name=original_model_name.split('push')[0] + 'prune',
                             accu=accu,
-                            target_accu=0.70, log=log)
+                            target_accu=0.50, log=log)
 
 # last layer optimization
 if optimize_last_layer:
-    last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(), 'lr': 1e-4}]
+    last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(), 'lr': 1e-06}] # TODO 1e-4
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
-
-    coefs = {
-        'crs_ent': 1,
-        'clst': 0.8,
-        'sep': -0.08,
-        'l1': 1e-4,
-    }
+    from settings import coefs # TODO
+    # coefs = {
+    #     'crs_ent': 1,
+    #     'clst': 0.8,
+    #     'sep': -0.08,
+    #     'l1': 1e-4,
+    # }
 
     log('optimize last layer')
     tnt.last_only(model=ppnet_multi, log=log)
     for i in range(100):
         log('iteration: \t{0}'.format(i))
-        _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
+        _, _ = tnt.train(model=ppnet_multi, dataloader=train_loader, optimizer=last_layer_optimizer,
                       class_specific=class_specific, coefs=coefs, log=log)
-        accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+        accu, _ = tnt.test(model=ppnet_multi, dataloader=test_loader,
                         class_specific=class_specific, log=log)
         save.save_model_w_condition(model=ppnet, model_dir=model_dir,
                                     model_name=original_model_name.split('push')[0] + '_' + str(i) + 'prune',
                                     accu=accu,
-                                    target_accu=0.70, log=log)
+                                    target_accu=0.50, log=log)
 
 logclose()
